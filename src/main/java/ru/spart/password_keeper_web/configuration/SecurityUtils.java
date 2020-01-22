@@ -1,4 +1,4 @@
-package ru.spart.password_keeper_web.security;
+package ru.spart.password_keeper_web.configuration;
 
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 /**
  * SecurityUtils takes care of all such static operations that have to do with
- * security and querying rights from different beans of the UI.
+ * configuration and querying rights from different beans of the UI.
  *
  */
 public final class SecurityUtils {

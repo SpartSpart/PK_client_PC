@@ -1,4 +1,4 @@
-package ru.spart.password_keeper_web.security;
+package ru.spart.password_keeper_web.configuration;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEnterEvent;
