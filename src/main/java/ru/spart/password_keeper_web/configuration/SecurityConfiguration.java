@@ -71,6 +71,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(new RemoteAuthenticationProvider(restTemplateBuilder));
     }
 
+
     @Bean
     @Override
     public UserDetailsService userDetailsService() {

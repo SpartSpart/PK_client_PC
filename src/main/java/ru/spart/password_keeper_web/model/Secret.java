@@ -16,6 +16,13 @@ public class Secret {
         this.password = password;
     }
 
+    public Secret(long id, String description, String login, String password) {
+        this.id = id;
+        this.description = description;
+        this.login = login;
+        this.password = password;
+    }
+
     public long getId() {
 
         return id;

@@ -25,10 +25,13 @@ public class SecretService {
 
     @Transactional
     public List<Secret> getAllSecrets() {
-        String sessionId = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        //String sessionId = (String) SecurityContextHolder.getContext().getAuthentication().getCredentials();
+        String contextDetails = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
+        String sessionId = contextDetails.split(";")[contextDetails.split(";").length-1];
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", sessionId);
-        HttpEntity<String> request = new HttpEntity<>(headers);
+        HttpEntity<String> request = new HttpEntity<>("body", headers);
 
         ResponseEntity<List<Secret>> resp = restTemplate.exchange(EMP_URL_PREFIX, HttpMethod.GET,request,
                 new ParameterizedTypeReference<List<Secret>>(){});

@@ -15,23 +15,25 @@ import java.util.List;
 public class GridView extends VerticalLayout {
     public static final String ROUTE = "grid";
 
-//    @Autowired
-//    private SecretService secretService;
+
+    private SecretService secretService;
 
     private Grid<Secret> secretGrid = new Grid<>(Secret.class);
 
-    public GridView(){
+    @Autowired
+    public GridView(SecretService secretService){
+        this.secretService = secretService;
 
 
         add(secretGrid);
-       // fillGrid();
+        fillGrid();
 
     }
 
-//    private void fillGrid() {
-//        List<Secret> secretList = secretService.getAllSecrets();
-//        secretGrid.setItems(secretList);
-//    }
+    private void fillGrid() {
+        List<Secret> secretList = secretService.getAllSecrets();
+        secretGrid.setItems(secretList);
+    }
 
 
 }
