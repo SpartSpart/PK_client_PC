@@ -18,7 +18,7 @@ public class RegistrationView extends VerticalLayout {
     private TextField confirmPassword = new TextField("Confirm Password");
     private TextField email = new TextField("Enter E-Mail");
 
-    private Button registrationBtn = new Button("Registration",this::setRegistration);
+    private Button registrationBtn = new Button("Registration",this::addUser);
 
     public RegistrationView(){
             add(login,
@@ -27,11 +27,11 @@ public class RegistrationView extends VerticalLayout {
                 email,
                 registrationBtn);
 
-            setHorizontalComponentAlignment(Alignment.CENTER);
+            setHorizontalComponentAlignment(Alignment.END);
     }
 
 
-    private void setRegistration (ClickEvent event){
+    private void addUser(ClickEvent event){
 
         //action of registration button clicked
         registrationBtn.getUI().ifPresent(ui -> ui.navigate("grid"));

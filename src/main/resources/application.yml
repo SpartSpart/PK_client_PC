@@ -1,0 +1,5 @@
+spring:
+   server:
+      remoteserver: http://localhost:58440/api/
+      localserver: http://localhost:8080/
+

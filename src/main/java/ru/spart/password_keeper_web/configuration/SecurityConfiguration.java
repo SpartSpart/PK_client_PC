@@ -1,17 +1,14 @@
 package ru.spart.password_keeper_web.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 
 /**
  * Configures spring configuration, doing the following:
@@ -30,8 +27,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final RestTemplateBuilder restTemplateBuilder;
 
-    public SecurityConfiguration(RestTemplateBuilder restTemplateBuilder) {
+    private final YamlConfig yamlConfig;
+
+    @Autowired
+    public SecurityConfiguration(RestTemplateBuilder restTemplateBuilder, YamlConfig yamlConfig) {
         this.restTemplateBuilder = restTemplateBuilder;
+        this.yamlConfig = yamlConfig;
     }
 
     /**
@@ -58,6 +59,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
                 // Configure the login page.
                 .and().formLogin().loginPage(LOGIN_URL).permitAll().loginProcessingUrl(LOGIN_PROCESSING_URL)
+                .defaultSuccessUrl("/grid")
                 .failureUrl(LOGIN_FAILURE_URL)
 
                 // Configure logout
@@ -68,20 +70,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(new RemoteAuthenticationProvider(restTemplateBuilder));
-    }
-
-
-    @Bean
-    @Override
-    public UserDetailsService userDetailsService() {
-        UserDetails user =
-                User.withUsername("user")
-                        .password("{noop}password")
-                        .roles("USER")
-                        .build();
-
-        return new InMemoryUserDetailsManager(user);
+        auth.authenticationProvider(new RemoteAuthenticationProvider(restTemplateBuilder,yamlConfig));
     }
 
     /**

@@ -10,18 +10,22 @@ public class Secret {
 
     private String password;
 
+    public Secret() {
+
+    }
+
     public Secret(String description, String login, String password) {
         this.description = description;
         this.login = login;
         this.password = password;
     }
 
-    public Secret(long id, String description, String login, String password) {
-        this.id = id;
-        this.description = description;
-        this.login = login;
-        this.password = password;
-    }
+//    public Secret(long id, String description, String login, String password) {
+//        this.id = id;
+//        this.description = description;
+//        this.login = login;
+//        this.password = password;
+//    }
 
     public long getId() {
 

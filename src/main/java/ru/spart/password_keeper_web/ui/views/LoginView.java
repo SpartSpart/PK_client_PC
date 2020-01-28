@@ -86,20 +86,11 @@ public class LoginView extends VerticalLayout {
         getElement().appendChild(ironForm);
         this.setHorizontalComponentAlignment(Alignment.CENTER);
 
-
-
         setClassName("login-view");
     }
 
     private void showRegistrationView(ClickEvent event) {
-        registrationButton.getUI().ifPresent(ui -> ui.navigate("grid"));
-
-
-//        NativeButton button = new NativeButton("Navigate to company");
-//        button.addClickListener((ClickEvent<NativeButton> e) -> {
-//            button.getUI().ifPresent(ui -> ui.navigate("company"));
-//        });
-
+        registrationButton.getUI().ifPresent(ui -> ui.navigate("registration"));
     }
 }
 
