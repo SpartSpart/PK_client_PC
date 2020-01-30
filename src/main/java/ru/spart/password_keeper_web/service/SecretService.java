@@ -25,6 +25,8 @@ public class SecretService {
 
     private String remoteServerUrl = null;
 
+
+
     @Autowired
     public SecretService(RestTemplateBuilder restTemplateBuilder, YamlConfig yamlConfig) {
         this.restTemplate = restTemplateBuilder.build();
@@ -63,4 +65,34 @@ public class SecretService {
         return responseEntity.getStatusCode();
     }
 
+    @Transactional
+    public HttpStatus deleteListSecret(List<Long> idList){
+        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String sessionId = principal.getRemoteSessionId();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", sessionId);
+
+        HttpEntity<List<Long>> request = new HttpEntity<>(idList, headers);
+
+        ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/delete", HttpMethod.POST, request, Void.class);
+
+        return responseEntity.getStatusCode();
+    }
+
+
+    @Transactional
+    public HttpStatus updateSecret(Secret secret){
+        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String sessionId = principal.getRemoteSessionId();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", sessionId);
+
+        HttpEntity<Secret> request = new HttpEntity<>(secret, headers);
+
+        ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/"+secret.getId(), HttpMethod.PUT, request, Void.class);
+
+        return responseEntity.getStatusCode();
+    }
 }

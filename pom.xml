@@ -52,6 +52,11 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-confirm-dialog-flow</artifactId>
+			<version>1.2.1</version>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>

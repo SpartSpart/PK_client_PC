@@ -3,11 +3,9 @@ package ru.spart.password_keeper_web.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 import ru.spart.password_keeper_web.model.User;
 
@@ -29,17 +27,17 @@ public class UserService {
 
     @Transactional
     public HttpStatus addUser(User user){
-        String postMappingValue = "/add";
+        String postMappingUrl = remoteServerUrl+"/add";
 
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String sessionId = principal.getRemoteSessionId();
+//        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String sessionId = principal.getRemoteSessionId();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cookie", sessionId);
+//          HttpHeaders headers = new HttpHeaders();
+//        headers.add("Cookie", sessionId);
 
-        HttpEntity<User> request = new HttpEntity<>(user, headers);
+        HttpEntity<User> request = new HttpEntity<>(user);
 
-        ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+postMappingValue, HttpMethod.POST, request, Void.class);
+        ResponseEntity <Void> responseEntity = restTemplate.exchange(postMappingUrl, HttpMethod.POST, request, Void.class);
 
         return responseEntity.getStatusCode();
     }
