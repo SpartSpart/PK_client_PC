@@ -4,7 +4,6 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.ItemClickEvent;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -14,25 +13,32 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import ru.spart.password_keeper_web.configuration.Principal;
+import ru.spart.password_keeper_web.cryptography.Crypto;
 import ru.spart.password_keeper_web.model.Secret;
 import ru.spart.password_keeper_web.service.SecretService;
 import ru.spart.password_keeper_web.ui.views.layout.EditSecretLayout;
+import ru.spart.password_keeper_web.ui.views.menu.SecretMenu;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Route(value = GridView.ROUTE)
-@PageTitle("Grid")
-public class GridView extends VerticalLayout {
-    public static final String ROUTE = "grid";
+@Route(value = SecretView.ROUTE)
+@PageTitle("Secrets")
+public class SecretView extends VerticalLayout {
+    public static final String ROUTE = "secrets";
     private static final String FILL_ALL_FIELDS = "Please fill all fields";
     private static final String NEW_SECRET = "New Secret";
     private static final String EDIT_SECRET = "Edit Secret";
+    private static final String HIDDEN_PASSWORD = "********";
 
     private SecretService secretService;
 
     private Secret secretForUpdate = null;
+
+    private SecretMenu secretMenu = new SecretMenu();
 
     private TextField filterTxt = new TextField();
 
@@ -47,8 +53,11 @@ public class GridView extends VerticalLayout {
     private Button deleteSecretBtn = new Button("Delete",this::deleteSecrets);
 
     @Autowired
-    public GridView(SecretService secretService){
+    public SecretView(SecretService secretService){
+
         this.secretService = secretService;
+        setCryptoKeys();
+
         setSizeFull();
 
         editSecretLayout.setVisible(false);
@@ -58,30 +67,33 @@ public class GridView extends VerticalLayout {
         HorizontalLayout btnLayout = secretAddsecretDeleteBtnLayout();
         setHorizontalComponentAlignment(Alignment.END,btnLayout);
 
-
+        add(secretMenu);
         add(filterTxt);
         add(secretGrid);
         add(btnLayout);
         add(editSecretLayout);
 
-
-
         setBtnListeners();
-        modifyGrid();
+        setGridSettings();
 
         getAllSecrets();
     }
 
+
     private void setBtnListeners(){
-        editSecretLayout.saveBtn.addClickListener(event -> saveSecret(event));
+        editSecretLayout.saveBtn.addClickListener(event -> {
+            try {
+                saveSecret(event);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         editSecretLayout.cancelBtn.addClickListener(event -> cancelEditSecret(event));
     }
 
     private HorizontalLayout secretAddsecretDeleteBtnLayout(){
         HorizontalLayout layout = new HorizontalLayout();
-        //layout.getStyle().set("border", "1px solid #9E9E9E");
         layout.add(addSecretBtn,deleteSecretBtn);
-
         return layout;
     }
 
@@ -101,24 +113,21 @@ public class GridView extends VerticalLayout {
             for (Secret secret : secretList)
                 if (secret.getDescription().contains(text))
                     filteredSecretList.add(secret);
-                secretGrid.setItems(filteredSecretList);
+                secretGrid.setItems(hidePassword(filteredSecretList));
         }
         else
-            secretGrid.setItems(secretList);
+            secretGrid.setItems(hidePassword(secretList));
     }
 
 
 
-    private void modifyGrid(){
-        //secretGrid.removeColumnByKey("id");
-        //secretGrid.addColumn()
+    private void setGridSettings(){
         secretGrid.getColumnByKey("id").setVisible(false);
+
         secretGrid.setColumnOrder(secretGrid.getColumnByKey("id"),
                 secretGrid.getColumnByKey("description"),
                 secretGrid.getColumnByKey("login"),
                 secretGrid.getColumnByKey("password"));
-        secretGrid.getColumns().get(0).setWidth("10%");
-        secretGrid.getColumns().get(2).setWidth("20%");
 
         secretGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
@@ -130,15 +139,26 @@ public class GridView extends VerticalLayout {
                 deleteSecretBtn.setEnabled(true);
             });
 
-        secretGrid.addItemClickListener(
+
+        secretGrid.addItemDoubleClickListener(
                 itemClickevent -> {
                     editSecretLayout.setVisible(true);
-                    Secret secretToUpdate = new Secret (
-                            itemClickevent.getItem().getId(),
-                            itemClickevent.getItem().getDescription(),
-                            itemClickevent.getItem().getLogin(),
-                            itemClickevent.getItem().getPassword());
-                    editSecretGridValue(secretToUpdate);
+                    Secret selectedSecret = itemClickevent.getItem();
+                    String password = searchPassword(selectedSecret.getId());
+                    selectedSecret.setPassword(password);
+                    editSecretGridValue(selectedSecret);
+                });
+
+        secretGrid.addItemClickListener(
+                itemClickevent -> {
+                    Secret selectedSecret = itemClickevent.getItem();
+                    if (selectedSecret.getPassword().equals(HIDDEN_PASSWORD)){
+                        String password = searchPassword(selectedSecret.getId());
+                        selectedSecret.setPassword(password);
+                    }
+                    else
+                        selectedSecret.setPassword(HIDDEN_PASSWORD);
+                    secretGrid.getDataProvider().refreshItem(selectedSecret);
                 });
 
     }
@@ -160,8 +180,33 @@ public class GridView extends VerticalLayout {
 
     private void getAllSecrets() {
         secretList = secretService.getAllSecrets();
-        secretGrid.setItems(secretList);
+        secretGrid.setItems(hidePassword(secretList));
         updateList();
+    }
+
+    private List<Secret> hidePassword(List<Secret> secretList){
+        List<Secret> secretListWithHiddenPassword = new ArrayList<>();
+        //  Collections.copy(secretListWithHiddenPassword,secretList);
+        for(Secret secret : secretList){
+            Secret hidenSecret = new Secret(
+                    secret.getId(),
+                    secret.getDescription(),
+                    secret.getLogin(),
+                    HIDDEN_PASSWORD);
+            secretListWithHiddenPassword.add(hidenSecret);
+        }
+        return secretListWithHiddenPassword;
+    }
+
+    private String searchPassword(long id){
+        String password = HIDDEN_PASSWORD;
+        for(Secret secret : secretList){
+            if (secret.getId()==id){
+                password = secret.getPassword();
+                break;
+            }
+        }
+        return password;
     }
 
     private void addSecret(ClickEvent event){
@@ -171,7 +216,7 @@ public class GridView extends VerticalLayout {
         clearTextFields();
     }
 
-    private void saveSecret(ClickEvent event){
+    private void saveSecret(ClickEvent event) throws Exception {
         Secret secret = editSecretLayout.createSecret();
         if(secret==null)
             sendNotification(FILL_ALL_FIELDS);
@@ -184,7 +229,7 @@ public class GridView extends VerticalLayout {
         }
     }
 
-    private void saveToService(Secret secret){
+    private void saveToService(Secret secret) throws Exception {
         if(secretForUpdate==null) {
             secretService.addSecret(secret);
             sendNotification("Secret saved successfully");
@@ -229,6 +274,7 @@ public class GridView extends VerticalLayout {
                 secretService.deleteListSecret(listItemsToDelete);
                 getAllSecrets();
                 deleteSecretBtn.setEnabled(false);
+                editSecretLayout.setVisible(false);
                 dialog.close();
             });
 
@@ -250,5 +296,9 @@ public class GridView extends VerticalLayout {
         editSecretLayout.clearTextFields();
     }
 
+    private void setCryptoKeys(){
+        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Crypto.setKeys(principal.getLogin());
+}
 
 }

@@ -11,6 +11,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 
+import javax.management.Notification;
 import java.util.ArrayList;
 
 public class RemoteAuthenticationProvider implements AuthenticationProvider {

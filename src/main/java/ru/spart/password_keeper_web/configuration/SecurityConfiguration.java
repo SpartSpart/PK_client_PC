@@ -59,7 +59,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
                 // Configure the login page.
                 .and().formLogin().loginPage(LOGIN_URL).permitAll().loginProcessingUrl(LOGIN_PROCESSING_URL)
-                .defaultSuccessUrl("/grid")
+                .defaultSuccessUrl("/secrets")
                 .failureUrl(LOGIN_FAILURE_URL)
 
                 // Configure logout

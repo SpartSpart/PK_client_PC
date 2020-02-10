@@ -2,8 +2,10 @@ package ru.spart.password_keeper_web.ui.views;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -32,8 +34,8 @@ public class RegistrationView extends VerticalLayout {
     private UserService userService;
 
     private TextField loginTxt = new TextField("Enter Login");
-    private TextField passwordTxt = new TextField("Enter Password");
-    private TextField confirmPasswordTxt = new TextField("Confirm Password");
+    private PasswordField passwordTxt = new PasswordField("Enter Password");
+    private PasswordField confirmPasswordTxt = new PasswordField("Confirm Password");
     private TextField emailTxt = new TextField("Enter E-Mail");
 
     private Button registrationBtn = new Button("Registration",this::addUser);
@@ -42,22 +44,31 @@ public class RegistrationView extends VerticalLayout {
     public RegistrationView(UserService userService){
         this.userService = userService;
 
+        setComponentWidth();
+
               add(loginTxt,
                     passwordTxt,
                     confirmPasswordTxt,
                     emailTxt,
                     registrationBtn);
 
-            setHorizontalComponentAlignment(Alignment.CENTER,
-                    loginTxt,
-                    passwordTxt,
-                    confirmPasswordTxt,
-                    emailTxt,
-                    registrationBtn);
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
 
     }
 
+    private void setComponentWidth(){
+        loginTxt.setWidth("20%");
+        passwordTxt.setWidth("20%");
+        confirmPasswordTxt.setWidth("20%");
+        emailTxt.setWidth("20%");
+        registrationBtn.setWidth("20%");
+
+        loginTxt.setMinWidth("150px");
+        passwordTxt.setMinWidth("150px");
+        confirmPasswordTxt.setMinWidth("150px");
+        emailTxt.setMinWidth("150px");
+        registrationBtn.setMinWidth("150px");
+    }
 
     private void addUser(ClickEvent event){
         User user = createUser();

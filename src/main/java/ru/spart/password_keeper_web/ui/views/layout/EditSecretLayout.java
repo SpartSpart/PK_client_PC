@@ -1,15 +1,11 @@
 package ru.spart.password_keeper_web.ui.views.layout;
 
-import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import ru.spart.password_keeper_web.model.Secret;
-import ru.spart.password_keeper_web.service.SecretService;
-import ru.spart.password_keeper_web.ui.views.GridView;
 
 public class EditSecretLayout extends VerticalLayout {
 
@@ -24,16 +20,24 @@ public class EditSecretLayout extends VerticalLayout {
 
         public EditSecretLayout() {
 
-       add(statusEditSecretLayout);
-       add(createSecretLayout());
+        statusEditSecretLayout.getStyle().set("font-weight","bold");
 
+        add(statusEditSecretLayout);
+        add(createSecretLayout());
+
+        getStyle().set("border", "1px solid lightgray");
     }
 
    private HorizontalLayout createSecretLayout(){
             HorizontalLayout layout = new HorizontalLayout();
+
        layout.add(descriptionTxt);
        layout.add(loginTxt);
        layout.add(passwordTxt);
+
+       descriptionTxt.getStyle().set("font-size", "smaller");
+       loginTxt.getStyle().set("font-size", "smaller");
+       passwordTxt.getStyle().set("font-size", "smaller");
 
        layout.add(saveBtn);
        layout.add(cancelBtn);
@@ -65,5 +69,9 @@ public class EditSecretLayout extends VerticalLayout {
 
     public void changeLayoutStatus(String status){
         statusEditSecretLayout.setText(status);
+    }
+
+    private void setElementsSize(){
+
     }
 }

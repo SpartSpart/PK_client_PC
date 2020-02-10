@@ -10,14 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
+import ru.spart.password_keeper_web.cryptography.Crypto;
 import ru.spart.password_keeper_web.model.Secret;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class SecretService {
-
-//    static final String URL_SEPARATOR = "/";
 
     private YamlConfig yamlConfig;
 
@@ -44,21 +44,24 @@ public class SecretService {
         headers.add("Cookie", sessionId);
         HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-        ResponseEntity<List<Secret>> resp = restTemplate.exchange(remoteServerUrl, HttpMethod.GET, request,
+        ResponseEntity<List<Secret>> response = restTemplate.exchange(remoteServerUrl, HttpMethod.GET, request,
                 new ParameterizedTypeReference<List<Secret>>() {
                 });
-        return resp.getStatusCode() == HttpStatus.OK ? resp.getBody() : null;
+        List<Secret> decryptedSecrets = decryptSecrets(response.getBody());
+        return response.getStatusCode() == HttpStatus.OK ? decryptedSecrets : null;
     }
 
     @Transactional
-    public HttpStatus addSecret(Secret secret){
+    public HttpStatus addSecret(Secret secret) throws Exception {
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", sessionId);
 
-        HttpEntity<Secret> request = new HttpEntity<>(secret, headers);
+        Secret encryptedSecret = encryptSecret(secret);
+
+        HttpEntity<Secret> request = new HttpEntity<>(encryptedSecret, headers);
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl, HttpMethod.POST, request, Void.class);
 
@@ -82,17 +85,46 @@ public class SecretService {
 
 
     @Transactional
-    public HttpStatus updateSecret(Secret secret){
+    public HttpStatus updateSecret(Secret secret) throws Exception {
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", sessionId);
 
-        HttpEntity<Secret> request = new HttpEntity<>(secret, headers);
+        Secret encryptSecret = encryptSecret(secret);
+
+        HttpEntity<Secret> request = new HttpEntity<>(encryptSecret, headers);
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/"+secret.getId(), HttpMethod.PUT, request, Void.class);
 
         return responseEntity.getStatusCode();
     }
+
+    private List<Secret> decryptSecrets(List<Secret> secretList){
+        List<Secret> decryptedSecrets = new ArrayList<>();
+
+        for(Secret secret : secretList){
+            Secret decryptedSecret = new Secret();
+            decryptedSecret.setId(secret.getId());
+
+            decryptedSecret.setDescription(Crypto.decryptString(secret.getDescription()));
+            decryptedSecret.setLogin(Crypto.decryptString(secret.getLogin()));
+            decryptedSecret.setPassword(Crypto.decryptString(secret.getPassword()));
+            decryptedSecrets.add(decryptedSecret);
+        }
+        return decryptedSecrets;
+    }
+
+    private Secret encryptSecret(Secret secret) throws Exception {
+        Secret encryptedSecret = new Secret();
+
+        encryptedSecret.setId(secret.getId());
+        encryptedSecret.setDescription(Crypto.encryptString(secret.getDescription()));
+        encryptedSecret.setLogin(Crypto.encryptString(secret.getLogin()));
+        encryptedSecret.setPassword(Crypto.encryptString(secret.getPassword()));
+
+        return encryptedSecret;
+    }
+
 }
