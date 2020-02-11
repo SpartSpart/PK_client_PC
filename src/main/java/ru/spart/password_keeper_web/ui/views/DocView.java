@@ -8,14 +8,11 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.spart.password_keeper_web.model.Doc;
-import ru.spart.password_keeper_web.model.Secret;
 import ru.spart.password_keeper_web.service.DocService;
 import ru.spart.password_keeper_web.service.FileService;
 import ru.spart.password_keeper_web.ui.views.layout.EditDocLayout;
@@ -139,38 +136,40 @@ public class DocView extends VerticalLayout {
                 docGrid.getColumnByKey("document"),
                 docGrid.getColumnByKey("description"));
 
-
-        docGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+//        docGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
         docGrid.addSelectionListener(selectEvent -> {
             selectedGridItems = selectEvent.getAllSelectedItems();
-            if (selectedGridItems == null || selectedGridItems.size() < 1)
+            if (selectedGridItems == null || selectedGridItems.size() < 1) {
                 deleteDocBtn.setEnabled(false);
-            else
+                Doc selectedDoc = null;
+                fileLayout.setDoc(selectedDoc);
+                fileLayout.getAllFileInfo();
+                fileLayout.setEnableAddBtn(false);
+            }
+
+            else {
                 deleteDocBtn.setEnabled(true);
+                Doc selectedDoc = selectEvent.getFirstSelectedItem().get();
+                fileLayout.setDoc(selectedDoc);
+                fileLayout.getAllFileInfo();
+                fileLayout.setEnableAddBtn(true);
+            }
         });
 
 
-        docGrid.addItemDoubleClickListener(
-                itemClickevent -> {
-//                    editDocLayout.setVisible(true);
-//                    Secret selectedSecret = itemClickevent.getItem();
-//                    String password = searchPassword(selectedSecret.getId());
-//                    selectedSecret.setPassword(password);
-//                    editDocGridValue(selectedSecret);
-                });
-
         docGrid.addItemClickListener(
                 itemClickevent -> {
+//                    Doc selectedDoc = itemClickevent.getItem();
+//                    fileLayout.setDoc(selectedDoc);
+//                    fileLayout.getAllFileInfo();
+                });
+
+        docGrid.addItemDoubleClickListener(
+                itemClickevent -> {
+                    editDocLayout.setVisible(true);
                     Doc selectedDoc = itemClickevent.getItem();
-                    fileLayout.setDoc(selectedDoc);
-//                    Secret selectedSecret = itemClickevent.getItem();
-//                    if (selectedSecret.getPassword().equals(HIDDEN_PASSWORD)) {
-//                        String password = searchPassword(selectedSecret.getId());
-//                        selectedSecret.setPassword(password);
-//                    } else
-//                        selectedSecret.setPassword(HIDDEN_PASSWORD);
-//                    docGrid.getDataProvider().refreshItem(selectedSecret);
+                    editDocGridValue(selectedDoc);
                 });
 
     }

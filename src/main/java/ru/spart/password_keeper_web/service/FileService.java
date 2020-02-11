@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 import ru.spart.password_keeper_web.model.Doc;
+import ru.spart.password_keeper_web.model.FileModel;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -43,7 +44,7 @@ public class FileService {
     }
 
     @Transactional
-    public List<String> getAllFileNames(Doc doc) {
+    public List<FileModel> getAllFileInfo(Doc doc) {
 
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
@@ -51,9 +52,9 @@ public class FileService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", sessionId);
         HttpEntity<Void> request = new HttpEntity<>(null, headers);
-        String url = remoteServerUrl + "/names/" + doc.getId();
-        ResponseEntity<List<String>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request,
-                new ParameterizedTypeReference<List<String>>() {
+        String url = remoteServerUrl + "/info/" + doc.getId();
+        ResponseEntity<List<FileModel>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request,
+                new ParameterizedTypeReference<List<FileModel>>() {
                 });
         return responseEntity.getStatusCode() == HttpStatus.OK ? responseEntity.getBody() : null;
     }
@@ -102,6 +103,20 @@ public class FileService {
         return responseEntity.getBody();
     }
 
+    public HttpStatus deleteListFiles(List<Long> idList) {
+        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String sessionId = principal.getRemoteSessionId();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", sessionId);
+
+        HttpEntity<List<Long>> request = new HttpEntity<>(idList, headers);
+
+        ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/delete", HttpMethod.POST, request, Void.class);
+
+        return responseEntity.getStatusCode();
+    }
+
 
    public List<String> prepareFilesForSendingToServer(Map<String, InputStream> fileMap, Doc doc) throws IOException {
         List<File> files = new ArrayList<>();
@@ -130,6 +145,7 @@ public class FileService {
         for (File file : files)
             file.delete();
    }
+
 
 
 }

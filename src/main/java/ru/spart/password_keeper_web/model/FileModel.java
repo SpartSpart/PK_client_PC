@@ -4,7 +4,7 @@ public class FileModel {
     private long id;
     private String fileName;
     private long doc_id;
-    private String fileId;
+    private String filePath;
 
     public long getId() {
         return id;
@@ -30,11 +30,11 @@ public class FileModel {
         this.doc_id = doc_id;
     }
 
-    public String getFileId() {
-        return fileId;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setFileId(String fileId) {
-        this.fileId = fileId;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 }
