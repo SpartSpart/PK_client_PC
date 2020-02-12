@@ -9,6 +9,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,19 +61,31 @@ public class FileService {
     }
 
     @Transactional
-    public List<File> getAllFiles(Doc doc) {
+    @Nullable
+    public String getFile(FileModel fileModel,Doc doc) throws IOException {
+
+        String homeDir = System.getProperty("user.home");
+        String downloadDir = homeDir+"\\Downloads\\";
 
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", sessionId);
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
         HttpEntity<Void> request = new HttpEntity<>(null, headers);
-        String url = remoteServerUrl + "/" + doc.getId();
-        ResponseEntity<List<File>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request,
-                new ParameterizedTypeReference<List<File>>() {
-                });
-        return responseEntity.getStatusCode() == HttpStatus.OK ? responseEntity.getBody() : null;
+        String url = remoteServerUrl + "/" + fileModel.getId();
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, byte[].class);
+
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            String downloadPath = downloadDir+doc.getDocument();
+            createDownloadDirectoryNamedDoc(downloadPath);
+
+            Files.write(Paths.get(downloadPath+"\\"+fileModel.getFileName()), responseEntity.getBody());
+            return "Saved: " + downloadPath +"\\"+ fileModel.getFileName();
+        }
+        else
+            return responseEntity.getStatusCode().toString();
     }
 
     @Transactional
@@ -144,6 +157,12 @@ public class FileService {
    private void deleteTempFiles(List<File> files){
         for (File file : files)
             file.delete();
+   }
+
+   private void createDownloadDirectoryNamedDoc(String path){
+       File docDirectory = new File(path);
+       if (!docDirectory.exists())
+           docDirectory.mkdirs();
    }
 
 

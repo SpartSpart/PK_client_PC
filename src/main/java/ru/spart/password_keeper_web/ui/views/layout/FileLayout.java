@@ -8,11 +8,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
-import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
-import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.DomEventListener;
 import elemental.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.spart.password_keeper_web.model.Doc;
@@ -33,11 +29,14 @@ public class FileLayout extends HorizontalLayout {
 
     private Button addFileBtn = new Button("Add Files");
     private Button deleteBtn = new Button("Delete");
+    private Button downloadBtn = new Button("Download");
 
     private MultiFileMemoryBuffer memoryBuffer = new MultiFileMemoryBuffer();
-    private CustomUpload uploadBtn = new CustomUpload(memoryBuffer);
+    private CustomUpload upload = new CustomUpload(memoryBuffer);
 
     private Doc doc = null;
+
+    public FileLayout(){}
 
     @Autowired
     public FileLayout(FileService fileService) {
@@ -64,9 +63,12 @@ public class FileLayout extends HorizontalLayout {
             selectedGridItems = selectEvent.getAllSelectedItems();
             if (selectedGridItems == null || selectedGridItems.size() < 1) {
                 deleteBtn.setEnabled(false);
+                downloadBtn.setEnabled(false);
             }
-            else
+            else {
                 deleteBtn.setEnabled(true);
+                downloadBtn.setEnabled(true);
+            }
         });
     }
 
@@ -80,10 +82,13 @@ public class FileLayout extends HorizontalLayout {
         addFileBtn.setEnabled(false);
         deleteBtn.setWidth("100%");
         deleteBtn.setEnabled(false);
+        downloadBtn.setWidth("100%");
+        downloadBtn.setEnabled(false);
 
-        btnLayout.add(uploadBtn);
+        btnLayout.add(upload);
         btnLayout.add(addFileBtn);
         btnLayout.add(deleteBtn);
+        btnLayout.add(downloadBtn);
 
         deleteBtn.addClickListener(event -> {
             deleteFiles(event);
@@ -94,7 +99,7 @@ public class FileLayout extends HorizontalLayout {
                 addFiles();
 
                 memoryBuffer.getFiles().clear();
-                uploadBtn.getElement().executeJs("this.files=[]");
+                upload.getElement().executeJs("this.files=[]");
 
                 addFileBtn.setEnabled(false);
             } catch (IOException e) {
@@ -102,12 +107,12 @@ public class FileLayout extends HorizontalLayout {
             }
         });
 
-        uploadBtn.addSucceededListener(event -> {
+        upload.addSucceededListener(event -> {
            if (isDoc())
                addFileBtn.setEnabled(true);
         });
 
-        uploadBtn.getElement().addEventListener("file-remove", event -> {
+        upload.getElement().addEventListener("file-remove", event -> {
             JsonObject eventData = event.getEventData();
             String removedFile = eventData.getString("event.detail.file.name");
             memoryBuffer.getFiles().remove(removedFile);
@@ -115,12 +120,41 @@ public class FileLayout extends HorizontalLayout {
                 addFileBtn.setEnabled(false);
         }).addEventData("event.detail.file.name");
 
+        downloadBtn.addClickListener(event -> {
+            if (selectedGridItems.size()>0) {
+                for (FileModel file : selectedGridItems) {
+                    getFile(file);
+                }
+                fileGrid.deselectAll();
+                downloadBtn.setEnabled(false);
+
+            }
+
+        });
+
         return btnLayout;
     }
 
-    public FileLayout() {
+    private void getFile(FileModel fileModel) {
+        String homeDir = System.getProperty("user.home");
+        String downloadDir = homeDir+"\\Downloads\\"+doc.getDocument()+"\\";
+        File file = new File(downloadDir+fileModel.getFileName());
+        if (file.exists())
+            fileExistsDialog(fileModel);
+        else
+            getFileFromServer(fileModel);
 
     }
+
+    private void getFileFromServer(FileModel fileModel){
+        try {
+           sendNotification(fileService.getFile(fileModel,doc));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private void addFiles() throws IOException {
         List<String> unUploadedFiles;
@@ -192,6 +226,37 @@ public class FileLayout extends HorizontalLayout {
 
     }
 
+    private void fileExistsDialog(FileModel fileModel) {
+        Dialog dialog = new Dialog();
+        dialog.setCloseOnEsc(false);
+        dialog.setCloseOnOutsideClick(false);
+
+        Label header = new Label("File already exists!");
+        Label question = new Label("Override: "+fileModel.getFileName()+"?");
+        Button confirmBtn = new Button("Yes");
+        Button cancelBtn = new Button("No");
+
+        VerticalLayout layout = new VerticalLayout();
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+
+        buttonLayout.add(cancelBtn, confirmBtn);
+
+        layout.add(header, question, buttonLayout);
+
+        dialog.add(layout);
+
+        confirmBtn.addClickListener(event -> {
+            getFileFromServer(fileModel);
+
+            dialog.close();
+        });
+
+        cancelBtn.addClickListener(event -> {
+            dialog.close();
+        });
+
+        dialog.open();
+    }
 
     private boolean isDoc() {
         if (doc == null)

@@ -2,4 +2,7 @@ spring:
    server:
       remoteserver: http://localhost:58440/api/
       localserver: http://localhost:8080/
-
+   http:
+      multipart:
+          max-file-size: 30MB
+          max-request-size: 30MB
