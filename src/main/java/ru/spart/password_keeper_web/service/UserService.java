@@ -12,8 +12,6 @@ import ru.spart.password_keeper_web.model.User;
 @Service
 public class UserService {
 
-    private YamlConfig yamlConfig;
-
     private RestTemplate restTemplate;
 
     private String remoteServerUrl = null;
@@ -21,7 +19,6 @@ public class UserService {
     @Autowired
     public UserService(RestTemplateBuilder restTemplateBuilder, YamlConfig yamlConfig) {
         this.restTemplate = restTemplateBuilder.build();
-        this.yamlConfig = yamlConfig;
         remoteServerUrl = yamlConfig.getRemoteserver()+"user";
     }
 
@@ -29,17 +26,10 @@ public class UserService {
     public HttpStatus addUser(User user){
         String postMappingUrl = remoteServerUrl+"/add";
 
-//        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String sessionId = principal.getRemoteSessionId();
-
-//          HttpHeaders headers = new HttpHeaders();
-//        headers.add("Cookie", sessionId);
-
         HttpEntity<User> request = new HttpEntity<>(user);
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(postMappingUrl, HttpMethod.POST, request, Void.class);
 
         return responseEntity.getStatusCode();
     }
-
 }

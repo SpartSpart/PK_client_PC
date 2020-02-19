@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
-import ru.spart.password_keeper_web.cryptography.Crypto;
+import ru.spart.password_keeper_web.cryptography.CryptText;
 import ru.spart.password_keeper_web.model.Secret;
 
 import java.util.ArrayList;
@@ -19,18 +19,13 @@ import java.util.List;
 @Service
 public class SecretService {
 
-    private YamlConfig yamlConfig;
-
     private RestTemplate restTemplate;
 
     private String remoteServerUrl = null;
 
-
-
     @Autowired
     public SecretService(RestTemplateBuilder restTemplateBuilder, YamlConfig yamlConfig) {
         this.restTemplate = restTemplateBuilder.build();
-        this.yamlConfig = yamlConfig;
         remoteServerUrl = yamlConfig.getRemoteserver()+"secrets";
     }
 
@@ -52,7 +47,7 @@ public class SecretService {
     }
 
     @Transactional
-    public HttpStatus addSecret(Secret secret) throws Exception {
+    public void addSecret(Secret secret) throws Exception {
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
@@ -65,11 +60,11 @@ public class SecretService {
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl, HttpMethod.POST, request, Void.class);
 
-        return responseEntity.getStatusCode();
+        responseEntity.getStatusCode();
     }
 
     @Transactional
-    public HttpStatus deleteListSecret(List<Long> idList){
+    public void deleteListSecret(List<Long> idList){
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
@@ -80,12 +75,12 @@ public class SecretService {
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/delete", HttpMethod.POST, request, Void.class);
 
-        return responseEntity.getStatusCode();
+        responseEntity.getStatusCode();
     }
 
 
     @Transactional
-    public HttpStatus updateSecret(Secret secret) throws Exception {
+    public void updateSecret(Secret secret) throws Exception {
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
@@ -98,7 +93,7 @@ public class SecretService {
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/"+secret.getId(), HttpMethod.PUT, request, Void.class);
 
-        return responseEntity.getStatusCode();
+        responseEntity.getStatusCode();
     }
 
     private List<Secret> decryptSecrets(List<Secret> secretList){
@@ -108,9 +103,9 @@ public class SecretService {
             Secret decryptedSecret = new Secret();
             decryptedSecret.setId(secret.getId());
 
-            decryptedSecret.setDescription(Crypto.decryptString(secret.getDescription()));
-            decryptedSecret.setLogin(Crypto.decryptString(secret.getLogin()));
-            decryptedSecret.setPassword(Crypto.decryptString(secret.getPassword()));
+            decryptedSecret.setDescription(CryptText.decryptString(secret.getDescription()));
+            decryptedSecret.setLogin(CryptText.decryptString(secret.getLogin()));
+            decryptedSecret.setPassword(CryptText.decryptString(secret.getPassword()));
             decryptedSecrets.add(decryptedSecret);
         }
         return decryptedSecrets;
@@ -120,11 +115,10 @@ public class SecretService {
         Secret encryptedSecret = new Secret();
 
         encryptedSecret.setId(secret.getId());
-        encryptedSecret.setDescription(Crypto.encryptString(secret.getDescription()));
-        encryptedSecret.setLogin(Crypto.encryptString(secret.getLogin()));
-        encryptedSecret.setPassword(Crypto.encryptString(secret.getPassword()));
+        encryptedSecret.setDescription(CryptText.encryptString(secret.getDescription()));
+        encryptedSecret.setLogin(CryptText.encryptString(secret.getLogin()));
+        encryptedSecret.setPassword(CryptText.encryptString(secret.getPassword()));
 
         return encryptedSecret;
     }
-
 }

@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import ru.spart.password_keeper_web.configuration.RemoteAuthenticationProvider;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
+import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.model.User;
 import ru.spart.password_keeper_web.service.UserService;
 
@@ -26,10 +27,7 @@ import java.util.Collection;
 @Route(value = RegistrationView.ROUTE)
 @PageTitle("Registration")
 public class RegistrationView extends VerticalLayout {
-    public static final String ROUTE = "registration";
-    private static final String FILL_ALL_FIELDS = "Please fill all fields";
-    private static final String PASSWORD_CONFIRMATION_FAILED = "Password confirmation is failed, please retry the enter";
-    private static final String USER_WAS_CREATED = "User was created successfully";
+    static final String ROUTE = "registration";
 
     private UserService userService;
 
@@ -53,7 +51,6 @@ public class RegistrationView extends VerticalLayout {
                     registrationBtn);
 
         setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-
     }
 
     private void setComponentWidth(){
@@ -72,16 +69,22 @@ public class RegistrationView extends VerticalLayout {
 
     private void addUser(ClickEvent event){
         User user = createUser();
-        if (user==null)
-            return;
+        if (user==null) {
+        }
         else{
-            HttpStatus message = userService.addUser(user);
-            if (message.equals(HttpStatus.OK)) {
-               sendNotification(USER_WAS_CREATED);
+            HttpStatus httpStatus = null;
+            try {
+                 httpStatus = userService.addUser(user);
+            }
+            catch (Exception e){
+                httpStatus = HttpStatus.BAD_REQUEST;
+            }
+            if (httpStatus.equals(HttpStatus.OK)) {
+               sendNotification(Messages.USER_WAS_CREATED.getMessage());
                 registrationBtn.getUI().ifPresent(ui -> ui.navigate("login"));
             }
             else
-                sendNotification(message.toString());
+                sendNotification(Messages.USER_ALREADY_EXISTS.getMessage());
         }
     }
 
@@ -95,20 +98,18 @@ public class RegistrationView extends VerticalLayout {
             password.equals("") ||
             confirmPassword.equals("") ||
             email.equals("")){
-                sendNotification(FILL_ALL_FIELDS);
+                sendNotification(Messages.FILL_ALL_FIELDS.getMessage());
         }
         else
             if (password.equals(confirmPassword))
                 return (new User(login,password,email));
         else{
-                sendNotification(PASSWORD_CONFIRMATION_FAILED);
+                sendNotification(Messages.PASSWORD_CONFIRMATION_FAILED.getMessage());
         }
         return null;
     }
 
     private void sendNotification(String message) {
-        Notification notification = new Notification();
-        notification.setPosition(Notification.Position.MIDDLE);
-        notification.show(message);
+       Notification.show(message);
     }
 }

@@ -14,12 +14,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.configuration.Principal;
-import ru.spart.password_keeper_web.cryptography.Crypto;
+import ru.spart.password_keeper_web.cryptography.CryptText;
 import ru.spart.password_keeper_web.model.Secret;
 import ru.spart.password_keeper_web.service.SecretService;
 import ru.spart.password_keeper_web.ui.views.layout.EditSecretLayout;
-import ru.spart.password_keeper_web.ui.views.menu.SecretMenu;
+import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.Set;
 @PageTitle("Secrets")
 public class SecretView extends VerticalLayout {
     public static final String ROUTE = "secrets";
-    private static final String FILL_ALL_FIELDS = "Please fill all fields";
+
     private static final String NEW_SECRET = "New Secret";
     private static final String EDIT_SECRET = "Edit Secret";
     private static final String HIDDEN_PASSWORD = "********";
@@ -38,7 +39,7 @@ public class SecretView extends VerticalLayout {
 
     private Secret secretForUpdate = null;
 
-    private SecretMenu secretMenu = new SecretMenu();
+    private Menu menu = new Menu();
 
     private TextField filterTxt = new TextField();
 
@@ -67,7 +68,7 @@ public class SecretView extends VerticalLayout {
         HorizontalLayout btnLayout = secretAddsecretDeleteBtnLayout();
         setHorizontalComponentAlignment(Alignment.END,btnLayout);
 
-        add(secretMenu);
+        add(menu);
         add(filterTxt);
         add(secretGrid);
         add(btnLayout);
@@ -88,7 +89,7 @@ public class SecretView extends VerticalLayout {
                 e.printStackTrace();
             }
         });
-        editSecretLayout.cancelBtn.addClickListener(event -> cancelEditSecret(event));
+        editSecretLayout.cancelBtn.addClickListener(this::cancelEditSecret);
     }
 
     private HorizontalLayout secretAddsecretDeleteBtnLayout(){
@@ -173,7 +174,7 @@ public class SecretView extends VerticalLayout {
     }
 
 
-    public void cancelEditSecret(ClickEvent event) {
+    private void cancelEditSecret(ClickEvent event) {
         clearTextFields();
         editSecretLayout.setVisible(false);
     }
@@ -219,7 +220,7 @@ public class SecretView extends VerticalLayout {
     private void saveSecret(ClickEvent event) throws Exception {
         Secret secret = editSecretLayout.createSecret();
         if(secret==null)
-            sendNotification(FILL_ALL_FIELDS);
+            sendNotification(Messages.FILL_ALL_FIELDS.getMessage());
         else {
             saveToService(secret);
 
@@ -231,15 +232,32 @@ public class SecretView extends VerticalLayout {
 
     private void saveToService(Secret secret) throws Exception {
         if(secretForUpdate==null) {
-            secretService.addSecret(secret);
-            sendNotification("Secret saved successfully");
+            String message = saveSecret(secret);
+            sendNotification(message);
         }
         else{
-            secret.setId(secretForUpdate.getId());
-            secretService.updateSecret(secret);
-            sendNotification("Secret updated successfully");
+            String message = updateSecret(secret);
+            sendNotification(message);
         }
+    }
 
+    private String saveSecret(Secret secret){
+        try {
+            secretService.addSecret(secret);
+        } catch (Exception e) {
+            return Messages.UPLOAD_FAILED.getMessage();
+        }
+        return Messages.UPLOAD_SUCCESS.getMessage();
+    }
+
+    private String updateSecret(Secret secret){
+        secret.setId(secretForUpdate.getId());
+        try {
+            secretService.updateSecret(secret);
+        } catch (Exception e) {
+            return Messages.UPDATE_FAILED.getMessage();
+        }
+        return Messages.UPDATE_SUCCESS.getMessage();
     }
 
     private void deleteSecrets(ClickEvent clickEvent) {
@@ -278,18 +296,14 @@ public class SecretView extends VerticalLayout {
                 dialog.close();
             });
 
-            cancelBtn.addClickListener(event -> {
-                dialog.close();
-            });
+            cancelBtn.addClickListener(event -> dialog.close());
 
         dialog.open();
 
     }
 
     private void sendNotification(String message) {
-        Notification notification = new Notification();
-        notification.setPosition(Notification.Position.BOTTOM_CENTER);
-        notification.show(message);
+        Notification.show(message);
     }
 
     private void clearTextFields(){
@@ -298,7 +312,6 @@ public class SecretView extends VerticalLayout {
 
     private void setCryptoKeys(){
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Crypto.setKeys(principal.getLogin());
-}
-
+        CryptText.setKeys(principal.getLogin());
+    }
 }

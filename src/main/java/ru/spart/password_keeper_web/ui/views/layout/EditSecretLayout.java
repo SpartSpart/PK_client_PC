@@ -29,7 +29,7 @@ public class EditSecretLayout extends VerticalLayout {
     }
 
    private HorizontalLayout createSecretLayout(){
-            HorizontalLayout layout = new HorizontalLayout();
+       HorizontalLayout layout = new HorizontalLayout();
 
        layout.add(descriptionTxt);
        layout.add(loginTxt);
@@ -71,7 +71,4 @@ public class EditSecretLayout extends VerticalLayout {
         statusEditSecretLayout.setText(status);
     }
 
-    private void setElementsSize(){
-
-    }
 }

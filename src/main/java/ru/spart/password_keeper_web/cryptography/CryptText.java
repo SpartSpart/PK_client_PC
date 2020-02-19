@@ -5,7 +5,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
-public class Crypto {
+public class CryptText {
 
     private static String key = "aesEncryptionKey";
     private static String initVector = "encryptionIntVec";

@@ -1,10 +1,12 @@
 package ru.spart.password_keeper_web.ui.views;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -12,23 +14,25 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.model.Doc;
 import ru.spart.password_keeper_web.service.DocService;
 import ru.spart.password_keeper_web.service.FileService;
 import ru.spart.password_keeper_web.ui.views.layout.EditDocLayout;
 import ru.spart.password_keeper_web.ui.views.layout.FileLayout;
-import ru.spart.password_keeper_web.ui.views.menu.SecretMenu;
+import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Route(value = DocView.ROUTE)
-@PageTitle("docs")
+@PageTitle("documents")
 public class DocView extends VerticalLayout {
-    public static final String ROUTE = "documents";
+    static final String ROUTE = "documents";
 
-    private static final String FILL_ALL_FIELDS = "Please fill all fields";
     private static final String NEW_DOC = "New Document";
     private static final String EDIT_DOC = "Edit Document";
 
@@ -37,7 +41,7 @@ public class DocView extends VerticalLayout {
 
     private Doc docForUpdate = null;
 
-    private SecretMenu secretMenu = new SecretMenu();
+    private Menu menu = new Menu();
 
     private TextField filterTxt = new TextField();
 
@@ -72,9 +76,10 @@ public class DocView extends VerticalLayout {
 
         HorizontalLayout gridHorizontalLayout = new HorizontalLayout();
         gridHorizontalLayout.setWidthFull();
+        gridHorizontalLayout.setSizeFull();
         gridHorizontalLayout.add(docGrid,fileLayout);
 
-        add(secretMenu);
+        add(menu);
         add(filterTxt);
         add(gridHorizontalLayout);
         add(btnLayout);
@@ -84,19 +89,95 @@ public class DocView extends VerticalLayout {
         setGridSettings();
 
         getAllDocs();
+
+        setDefaultSizeUploadListFiles();
+
+        UI.getCurrent().getPage().addBrowserWindowResizeListener(
+                event -> {
+                    int windowHeight = event.getHeight();
+                    setUploadListFilesElementHeight(windowHeight);
+                });
     }
 
+    private void setUploadListFilesElementHeight(int windowHeight){
+        final int totalHeightOfStaticPageElements = 677;
+        final int minHeightOfUploadListFilesElement = 51;
+        if ((windowHeight-totalHeightOfStaticPageElements) > minHeightOfUploadListFilesElement){
+            int listHeight = windowHeight-totalHeightOfStaticPageElements;
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.display = 'block'");
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.overflowY = 'scroll'");
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.maxHeight = '" + listHeight + "px'");
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.minHeight = '0px'");
+        }
+        else{
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.display = 'block'");
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.overflowY = 'scroll'");
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.minHeight = '50px'");
+            UI.getCurrent().getPage().executeJs("document.querySelectorAll('vaadin-upload')[0].shadowRoot.childNodes[4].style.maxHeight = '50px'");
+        }
+    }
+
+    private void setDefaultSizeUploadListFiles(){
+        UI.getCurrent().getPage().retrieveExtendedClientDetails(details -> {
+           int windowHeight = details.getWindowInnerHeight();
+           setUploadListFilesElementHeight(windowHeight);
+        });
+    }
 
     private void setBtnListeners() {
         editDocLayout.saveBtn.addClickListener(event -> {
-            try {
-                saveDoc(event);
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (isCorrectDocName()) {
+                try {
+                    saveDoc(event);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
-        editDocLayout.cancelBtn.addClickListener(event -> cancelEditDoc(event));
+
+        editDocLayout.cancelBtn.addClickListener(this::cancelEditDoc);
     }
+
+    private boolean isCorrectDocName() {
+        String docName = editDocLayout.getDocName();
+        if (isDocNameNotExists(docName)){
+
+            Pattern pattern = Pattern.compile("^[a-zA-ZА-Яа-я0-9_. ]+$");
+            Matcher matcher = pattern.matcher(docName);
+
+            if(matcher.find())
+                return true;
+            else
+                if (docName.equals(""))
+                    sendNotification(Messages.FILL_ALL_FIELDS.getMessage());
+                else
+                    sendNotification(Messages.UNACCEPTABLE_SYMBOLS.getMessage());
+        }
+        else{
+            sendNotification(Messages.NAME_ALREADY_EXISTS.getMessage());
+        }
+
+        return false;
+    }
+
+    private boolean isDocNameNotExists(String docName){
+        if (docList!=null){
+            if (docForUpdate == null){
+                for (Doc doc : docList) {
+                    if (doc.getDocument().equals(docName))
+                        return false;
+                }
+            }
+            else {
+                for (Doc doc : docList) {
+                    if (doc.getDocument().equals(docName) && !docForUpdate.getDocument().equals(docName))
+                        return false;
+                }
+            }
+        }
+    return true;
+    }
+
 
     private HorizontalLayout docAddDeleteBtnLayout() {
         HorizontalLayout layout = new HorizontalLayout();
@@ -109,8 +190,6 @@ public class DocView extends VerticalLayout {
         filterTxt.setClearButtonVisible(true);
         filterTxt.setValueChangeMode(ValueChangeMode.EAGER);
         filterTxt.addValueChangeListener(e -> updateList());
-
-
     }
 
     private void updateList() {
@@ -123,27 +202,26 @@ public class DocView extends VerticalLayout {
                     filteredDocList.add(doc);
             docGrid.setItems(filteredDocList);
         }
-        else
+        else {
+            assert docList != null;
             docGrid.setItems(docList);
+        }
     }
 
-
-
     private void setGridSettings() {
+        docGrid.setHeight("auto");
+
         docGrid.getColumnByKey("id").setVisible(false);
 
         docGrid.setColumnOrder(docGrid.getColumnByKey("id"),
                 docGrid.getColumnByKey("document"),
                 docGrid.getColumnByKey("description"));
 
-//        docGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-
         docGrid.addSelectionListener(selectEvent -> {
             selectedGridItems = selectEvent.getAllSelectedItems();
             if (selectedGridItems == null || selectedGridItems.size() < 1) {
                 deleteDocBtn.setEnabled(false);
-                Doc selectedDoc = null;
-                fileLayout.setDoc(selectedDoc);
+                fileLayout.setDoc(null);
                 fileLayout.getAllFileInfo();
                 fileLayout.setEnableAddBtn(false);
             }
@@ -158,16 +236,8 @@ public class DocView extends VerticalLayout {
         });
 
 
-        docGrid.addItemClickListener(
-                itemClickevent -> {
-//                    Doc selectedDoc = itemClickevent.getItem();
-//                    fileLayout.setDoc(selectedDoc);
-//                    fileLayout.getAllFileInfo();
-                });
-
         docGrid.addItemDoubleClickListener(
                 itemClickevent -> {
-                    editDocLayout.setVisible(true);
                     Doc selectedDoc = itemClickevent.getItem();
                     editDocGridValue(selectedDoc);
                 });
@@ -183,7 +253,7 @@ public class DocView extends VerticalLayout {
     }
 
 
-    public void cancelEditDoc(ClickEvent event) {
+    private void cancelEditDoc(ClickEvent event) {
         clearTextFields();
         editDocLayout.setVisible(false);
     }
@@ -193,10 +263,6 @@ public class DocView extends VerticalLayout {
         docGrid.setItems(docList);
         updateList();
     }
-
-
-
-
 
     private void addDoc(ClickEvent event) {
         editDocLayout.changeLayoutStatus(NEW_DOC);
@@ -208,9 +274,9 @@ public class DocView extends VerticalLayout {
     private void saveDoc(ClickEvent event) throws Exception {
         Doc doc = editDocLayout.createDoc();
         if (doc == null)
-            sendNotification(FILL_ALL_FIELDS);
+            sendNotification(Messages.CHECK_DOC_NAME.getMessage());
         else {
-            saveToService(doc);
+            addOrUdateSecretToService(doc);
 
             getAllDocs();
             clearTextFields();
@@ -218,16 +284,34 @@ public class DocView extends VerticalLayout {
         }
     }
 
-    private void saveToService(Doc doc) throws Exception {
+    private void addOrUdateSecretToService(Doc doc) {
+        String message;
         if (docForUpdate == null) {
-            docService.addDoc(doc);
-            sendNotification("Document saved successfully");
+            message = saveDoc(doc);
+            sendNotification(message);
         } else {
+            message = updateDoc(doc);
+            sendNotification(message);
+        }
+    }
+
+    private String saveDoc(Doc doc){
+        try {
+            docService.addDoc(doc);
+        } catch (Exception e) {
+            return Messages.UPLOAD_FAILED.getMessage();
+        }
+        return Messages.UPLOAD_SUCCESS.getMessage();
+    }
+
+    private String updateDoc(Doc doc){
+        try {
             doc.setId(docForUpdate.getId());
             docService.updateDoc(doc);
-            sendNotification("Document updated successfully");
+        } catch (Exception e) {
+            return Messages.UPDATE_FAILED.getMessage();
         }
-
+        return Messages.UPDATE_SUCCESS.getMessage();
     }
 
     private void deleteDocs(ClickEvent clickEvent) {
@@ -266,22 +350,16 @@ public class DocView extends VerticalLayout {
             dialog.close();
         });
 
-        cancelBtn.addClickListener(event -> {
-            dialog.close();
-        });
+        cancelBtn.addClickListener(event -> dialog.close());
 
         dialog.open();
-
     }
 
     private void sendNotification(String message) {
-        com.vaadin.flow.component.notification.Notification notification = new com.vaadin.flow.component.notification.Notification();
-        notification.setPosition(com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER);
-        notification.show(message);
+      Notification.show(message);
     }
 
     private void clearTextFields() {
         editDocLayout.clearTextFields();
     }
-
 }

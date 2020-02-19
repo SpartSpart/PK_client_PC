@@ -7,31 +7,23 @@ import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 import ru.spart.password_keeper_web.model.Doc;
-import ru.spart.password_keeper_web.model.Secret;
 
 import java.util.List;
 
 @Service
 public class DocService {
 
-
-    private YamlConfig yamlConfig;
-
     private RestTemplate restTemplate;
 
     private String remoteServerUrl = null;
 
-
     @Autowired
     public DocService(RestTemplateBuilder restTemplateBuilder, YamlConfig yamlConfig) {
         this.restTemplate = restTemplateBuilder.build();
-        this.yamlConfig = yamlConfig;
         remoteServerUrl = yamlConfig.getRemoteserver() + "docs";
     }
 
@@ -52,7 +44,7 @@ public class DocService {
     }
 
     @Transactional
-    public HttpStatus addDoc(Doc doc){
+    public void addDoc(Doc doc) throws Exception{
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
@@ -63,11 +55,11 @@ public class DocService {
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl, HttpMethod.POST, request, Void.class);
 
-        return responseEntity.getStatusCode();
+        responseEntity.getStatusCode();
     }
 
     @Transactional
-    public HttpStatus updateDoc(Doc doc) throws Exception {
+    public void updateDoc(Doc doc) throws Exception {
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
@@ -78,11 +70,11 @@ public class DocService {
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/"+doc.getId(), HttpMethod.PUT, request, Void.class);
 
-        return responseEntity.getStatusCode();
+        responseEntity.getStatusCode();
     }
 
     @Transactional
-    public HttpStatus deleteListDocs(List<Long> idList){
+    public void deleteListDocs(List<Long> idList){
         Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String sessionId = principal.getRemoteSessionId();
 
@@ -93,7 +85,7 @@ public class DocService {
 
         ResponseEntity <Void> responseEntity = restTemplate.exchange(remoteServerUrl+"/delete", HttpMethod.POST, request, Void.class);
 
-        return responseEntity.getStatusCode();
+        responseEntity.getStatusCode();
     }
 
 }

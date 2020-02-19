@@ -9,15 +9,16 @@ import ru.spart.password_keeper_web.configuration.Principal;
 
 import java.util.ArrayList;
 
-public class SecretMenu extends MenuBar {
+public class Menu extends MenuBar {
 
-    public SecretMenu() {
+    public Menu() {
 //    Text selected = new Text("");
 //    Div message = new Div(new Text("Selected: "), selected);
 
         MenuItem secrets = addItem("Secrets");
         MenuItem documents = addItem("Documents");
-        MenuItem signOut = addItem("Sign Out"); // e -> sendNotification("Sign Out"));
+        MenuItem signOut = addItem("Sign Out, "+getUserName()); // e -> sendNotification("Sign Out"));
+
 
         secrets.addClickListener(event -> routeToSecrets());
         documents.addClickListener(event -> routeToDocuments());
@@ -51,8 +52,9 @@ public class SecretMenu extends MenuBar {
     }
 
     private void signOut(){
-        Principal principal = new Principal(null,null);
-        new UsernamePasswordAuthenticationToken(principal, null, new ArrayList<>());
+        SecurityContextHolder.getContext().setAuthentication(null);
+//        Principal principal = new Principal(null,null);
+//        new UsernamePasswordAuthenticationToken(principal, null, new ArrayList<>());
         getUI().ifPresent(ui -> ui.navigate("login"));
     }
 
@@ -60,5 +62,10 @@ public class SecretMenu extends MenuBar {
         Notification notification = new Notification();
         notification.setPosition(Notification.Position.MIDDLE);
         notification.show(message);
+    }
+
+    private String getUserName(){
+        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.getLogin().toUpperCase();
     }
 }

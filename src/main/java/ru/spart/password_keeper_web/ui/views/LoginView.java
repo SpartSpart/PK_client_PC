@@ -16,7 +16,7 @@ import com.vaadin.flow.dom.Element;
 @NpmPackage(value = "@polymer/iron-form", version = "3.0.1")
 @JsModule("@polymer/iron-form/iron-form.js")
 public class LoginView extends VerticalLayout {
-    public static final String ROUTE = "login";
+    static final String ROUTE = "login";
 
     private TextField loginTxt = new TextField("Enter Login");
     private PasswordField passwordTxt = new PasswordField("Enter Password");

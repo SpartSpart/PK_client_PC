@@ -22,9 +22,7 @@ public class FileModel {
         this.fileName = fileName;
     }
 
-    public long getDoc_id() {
-        return doc_id;
-    }
+    public long getDoc_id() {return doc_id;}
 
     public void setDoc_id(long doc_id) {
         this.doc_id = doc_id;
