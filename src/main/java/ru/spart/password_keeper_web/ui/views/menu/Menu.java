@@ -12,35 +12,18 @@ import java.util.ArrayList;
 public class Menu extends MenuBar {
 
     public Menu() {
-//    Text selected = new Text("");
-//    Div message = new Div(new Text("Selected: "), selected);
 
         MenuItem secrets = addItem("Secrets");
         MenuItem documents = addItem("Documents");
-        MenuItem signOut = addItem("Sign Out, "+getUserName()); // e -> sendNotification("Sign Out"));
+        MenuItem notes = addItem("Notes");
+        MenuItem signOut = addItem("Sign Out, "+getUserName());
 
 
         secrets.addClickListener(event -> routeToSecrets());
         documents.addClickListener(event -> routeToDocuments());
-        signOut.addClickListener(event -> signOut());
+        notes.addClickListener(event -> routeToNotes());
 
-//        SubMenu projectSubMenu = project.getSubMenu();
-//        MenuItem users = projectSubMenu.addItem("Users");
-//        MenuItem billing = projectSubMenu.addItem("Billing");
-//
-//        SubMenu usersSubMenu = users.getSubMenu();
-//        usersSubMenu.addItem("List", e -> selected.setText("List"));
-//        usersSubMenu.addItem("Add", e -> selected.setText("Add"));
-//
-//        SubMenu billingSubMenu = billing.getSubMenu();
-//        billingSubMenu.addItem("Invoices", e -> selected.setText("Invoices"));
-//        billingSubMenu.addItem("Balance Events",
-//                e -> selected.setText("Balance Events"));
-//
-//        account.getSubMenu().addItem("Edit Profile",
-//                e -> selected.setText("Edit Profile"));
-//        account.getSubMenu().addItem("Privacy Settings",
-//                e -> selected.setText("Privacy Settings"));
+        signOut.addClickListener(event -> signOut());
     }
 
     private void routeToSecrets(){
@@ -51,10 +34,12 @@ public class Menu extends MenuBar {
         getUI().ifPresent(ui -> ui.navigate("documents"));
     }
 
+    private void routeToNotes(){
+        getUI().ifPresent(ui -> ui.navigate("notes"));
+    }
+
     private void signOut(){
         SecurityContextHolder.getContext().setAuthentication(null);
-//        Principal principal = new Principal(null,null);
-//        new UsernamePasswordAuthenticationToken(principal, null, new ArrayList<>());
         getUI().ifPresent(ui -> ui.navigate("login"));
     }
 

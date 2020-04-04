@@ -142,7 +142,7 @@ public class DocView extends VerticalLayout {
         String docName = editDocLayout.getDocName();
         if (isDocNameNotExists(docName)){
 
-            Pattern pattern = Pattern.compile("^[a-zA-ZА-Яа-я0-9_. ]+$");
+            Pattern pattern = Pattern.compile("^[a-zA-ZА-Яа-я0-9_.\\- ]+$");
             Matcher matcher = pattern.matcher(docName);
 
             if(matcher.find())

@@ -59,10 +59,13 @@ public class CryptText {
     }
 
     private static String deleteLastSymbolFromString(String string){
-        return string.substring(0,string.length()-1);
+
+        return string.replaceAll("\n","");
     }
 
     private static String addLastSymbolToString(String string){
         return string+"\n";
     }
+
+
 }

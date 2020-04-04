@@ -267,8 +267,6 @@ public class FileLayout extends HorizontalLayout {
 
     private void sendNotification(String message) {
         Notification.show(message);
-//        Notification n = new Notification();
-//        n.setPosition(Notification.Position.MIDDLE);
     }
 
     public void getAllFileInfo() {

@@ -10,6 +10,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.dom.Element;
+import org.springframework.security.core.context.SecurityContextHolder;
+import ru.spart.password_keeper_web.configuration.Principal;
+import ru.spart.password_keeper_web.cryptography.CryptText;
 
 @Route(value = LoginView.ROUTE)
 @PageTitle("Login")
@@ -56,7 +59,7 @@ public class LoginView extends VerticalLayout {
         getElement().appendChild(ironForm);
         this.setHorizontalComponentAlignment(Alignment.CENTER);
 
-        setClassName("descriptionTxt-view");
+        setClassName("noteTxt-view");
     }
 
     private void showRegistrationView(ClickEvent event) {
@@ -74,4 +77,5 @@ public class LoginView extends VerticalLayout {
         submitBtn.setMinWidth("150px");
         registrationBtn.setMinWidth("150px");
     }
+
 }
