@@ -11,7 +11,11 @@ import java.util.ArrayList;
 
 public class Menu extends MenuBar {
 
+    public static Principal principal = null;
+
     public Menu() {
+
+        principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         MenuItem secrets = addItem("Secrets");
         MenuItem documents = addItem("Documents");
@@ -40,6 +44,7 @@ public class Menu extends MenuBar {
 
     private void signOut(){
         SecurityContextHolder.getContext().setAuthentication(null);
+        principal = null;
         getUI().ifPresent(ui -> ui.navigate("login"));
     }
 
@@ -50,7 +55,7 @@ public class Menu extends MenuBar {
     }
 
     private String getUserName(){
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         return principal.getLogin().toUpperCase();
     }
 }

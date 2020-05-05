@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 import ru.spart.password_keeper_web.model.Doc;
+import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class DocService {
     @Transactional
     public List<Doc> getAllDocs() {
 
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -45,7 +46,7 @@ public class DocService {
 
     @Transactional
     public void addDoc(Doc doc) throws Exception{
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -60,7 +61,7 @@ public class DocService {
 
     @Transactional
     public void updateDoc(Doc doc) throws Exception {
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -75,7 +76,7 @@ public class DocService {
 
     @Transactional
     public void deleteListDocs(List<Long> idList){
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();

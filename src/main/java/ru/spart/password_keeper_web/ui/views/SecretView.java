@@ -311,7 +311,7 @@ public class SecretView extends VerticalLayout {
     }
 
     private void setCryptoKeys(){
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         CryptText.setKeys(principal.getLogin());
     }
 }

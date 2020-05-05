@@ -12,6 +12,7 @@ import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 import ru.spart.password_keeper_web.cryptography.CryptText;
 import ru.spart.password_keeper_web.model.Secret;
+import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class SecretService {
     @Transactional
     public List<Secret> getAllSecrets() {
 
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -48,7 +49,7 @@ public class SecretService {
 
     @Transactional
     public void addSecret(Secret secret) throws Exception {
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -65,7 +66,7 @@ public class SecretService {
 
     @Transactional
     public void deleteListSecret(List<Long> idList){
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -81,7 +82,7 @@ public class SecretService {
 
     @Transactional
     public void updateSecret(Secret secret) throws Exception {
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();

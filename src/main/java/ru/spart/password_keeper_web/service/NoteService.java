@@ -13,6 +13,7 @@ import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 import ru.spart.password_keeper_web.cryptography.CryptText;
 import ru.spart.password_keeper_web.model.Note;
 import ru.spart.password_keeper_web.model.Secret;
+import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class NoteService {
     @Transactional
     public List<Note> getAllNotes() {
 
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -49,7 +50,7 @@ public class NoteService {
 
     @Transactional
     public void addNote(Note note) throws Exception {
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -66,7 +67,7 @@ public class NoteService {
 
     @Transactional
     public void deleteListNotes(List<Long> idList){
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -82,7 +83,7 @@ public class NoteService {
 
     @Transactional
     public void updateNote(Note note) throws Exception {
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String sessionId = principal.getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();

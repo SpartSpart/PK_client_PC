@@ -2,26 +2,17 @@ package ru.spart.password_keeper_web.ui.views;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import ru.spart.password_keeper_web.configuration.RemoteAuthenticationProvider;
-import ru.spart.password_keeper_web.configuration.yaml.YamlConfig;
 import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.model.User;
 import ru.spart.password_keeper_web.service.UserService;
-
-import java.util.Collection;
 
 
 @Route(value = RegistrationView.ROUTE)

@@ -1,5 +1,7 @@
 package ru.spart.password_keeper_web.service;
 
+import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -19,8 +21,12 @@ import ru.spart.password_keeper_web.cryptography.CryptFile;
 import ru.spart.password_keeper_web.cryptography.CryptoException;
 import ru.spart.password_keeper_web.model.Doc;
 import ru.spart.password_keeper_web.model.FileModel;
+import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,8 +61,10 @@ public class FileService {
     }
 
     @Transactional
+
     @Nullable
-    public String getFile(FileModel fileModel, Doc doc) throws IOException {
+    public File getSingleFile(FileModel fileModel, Doc doc) {
+
         String sessionId = getPrincipal().getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -68,7 +76,39 @@ public class FileService {
 
         if (responseEntity.getStatusCode() == HttpStatus.OK) {
 
-            String downloadPath = getDownloadPath(doc);
+            String downloadPath = getDownloadPath(doc,true);
+
+            try {
+                Files.write(Paths.get(downloadPath + fileModel.getFileName()), responseEntity.getBody());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            File file = new File (downloadPath+fileModel.getFileName());
+
+            decryptFile(file);
+
+            return file;
+        } else
+            return null;
+    }
+
+
+    @Transactional
+    @Nullable
+    public String getFileMultiSelected(FileModel fileModel, Doc doc) throws IOException {
+        String sessionId = getPrincipal().getRemoteSessionId();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", sessionId);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_OCTET_STREAM));
+        HttpEntity<Void> request = new HttpEntity<>(null, headers);
+        String url = remoteServerUrl + "/" + fileModel.getId();
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url, HttpMethod.GET, request, byte[].class);
+
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+
+            String downloadPath = getDownloadPath(doc,false);
 
             Files.write(Paths.get(downloadPath + fileModel.getFileName()), responseEntity.getBody());
 
@@ -89,18 +129,27 @@ public class FileService {
     }
 
 
-    public String getDownloadPath(Doc doc) {
-        String homeDir = System.getProperty("user.home");
-        String downloadDir = homeDir + "\\Downloads\\";
-        String userName = getPrincipal().getLogin();
-        String downloadPath = downloadDir + doc.getDocument() + "(" + userName + ")";
-        createDownloadDirectoryNamedDoc(downloadPath);
-        return downloadPath + "\\";
+        public String getDownloadPath(Doc doc,boolean temp) {
+            String homeDir = System.getProperty("user.home");
+            String downloadDir = homeDir + "\\Downloads";
+            String downloadPath;
+        if (temp){
+            downloadPath = downloadDir+"\\iKeeperTemp\\";
+            createDownloadDirectoryNamedDoc(downloadPath);
+            return downloadPath;
+        }
+            String userName = getPrincipal().getLogin();
+            downloadPath = downloadDir + "\\" + userName + "\\"+ doc.getDocument();
+            createDownloadDirectoryNamedDoc(downloadPath);
+            return downloadPath + "\\";
     }
 
 
+
+
+
     @Transactional
-    private List<String> addFiles(List<File> files, Doc doc) throws IOException, CryptoException {
+    public List<String> addFiles(List<File> files, Doc doc) throws IOException, CryptoException {
         String sessionId = getPrincipal().getRemoteSessionId();
 
         HttpHeaders headers = new HttpHeaders();
@@ -183,8 +232,20 @@ public class FileService {
             docDirectory.mkdirs();
     }
 
-    private Principal getPrincipal() {
-        return (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+    public Principal getPrincipal() {
+        Principal principal = Menu.principal;
+        return principal;
+    }
+
+    private InetAddress getLocalHost(){
+        InetAddress ip = null;
+        try {
+            ip = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return ip;
     }
 
 }

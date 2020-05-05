@@ -1,26 +1,27 @@
 package ru.spart.password_keeper_web.ui.views.layout;
 
 import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.server.StreamResource;
 import elemental.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.cryptography.CryptoException;
 import ru.spart.password_keeper_web.model.Doc;
 import ru.spart.password_keeper_web.model.FileModel;
 import ru.spart.password_keeper_web.service.FileService;
+import ru.spart.password_keeper_web.ui.views.component.CustomFileInputStream;
 import ru.spart.password_keeper_web.ui.views.component.CustomUpload;
 
 import java.io.*;
@@ -30,12 +31,12 @@ import java.util.*;
 public class FileLayout extends HorizontalLayout {
     private FileService fileService;
 
-    private Grid<FileModel> fileGrid = new Grid<>(FileModel.class);
+    private Grid<FileModel> fileGrid = new Grid<>();
     private Set<FileModel> selectedGridItems = new HashSet<>();
 
     private Button addFileBtn = new Button("Add Files");
     private Button deleteBtn = new Button("Delete");
-    private Button downloadBtn = new Button("Download");
+    //private Button downloadBtn = new Button("Download");
 
     private MultiFileMemoryBuffer memoryBuffer = new MultiFileMemoryBuffer();
     private CustomUpload upload = new CustomUpload(memoryBuffer);
@@ -45,7 +46,7 @@ public class FileLayout extends HorizontalLayout {
     @Autowired
     public FileLayout(FileService fileService) {
         this.fileService = fileService;
-        setWidth("40%");
+        setWidth("60%");
         getStyle().set("padding-top", "0px");
 
         setHeightFull();
@@ -59,10 +60,20 @@ public class FileLayout extends HorizontalLayout {
     private void setGridSettings() {
         fileGrid.setMaxHeight("100%");
         fileGrid.setHeight("auto");
+        fileGrid.setWidth("70%");
 
-        fileGrid.getColumnByKey("id").setVisible(false);
-        fileGrid.getColumnByKey("doc_id").setVisible(false);
-        fileGrid.getColumnByKey("filePath").setVisible(false);
+        fileGrid.addColumn(new ComponentRenderer<>(item ->  {
+            Anchor download = new Anchor(new StreamResource(item.getFileName(), () -> createFileResource(item)), "");
+
+            download.getElement().setAttribute("download", true);
+            download.add(new Button(new Icon(VaadinIcon.DOWNLOAD_ALT)));
+            add(download);
+            return download;
+        })).setHeader("Download").setResizable(true);
+
+        fileGrid.addColumn(FileModel::getFileName).setHeader("fileName").setResizable(true);
+
+        fileGrid.getColumns().forEach(column -> column.setAutoWidth(true));
 
         fileGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
@@ -70,11 +81,11 @@ public class FileLayout extends HorizontalLayout {
             selectedGridItems = selectEvent.getAllSelectedItems();
             if (selectedGridItems == null || selectedGridItems.size() < 1) {
                 deleteBtn.setEnabled(false);
-                downloadBtn.setEnabled(false);
+                //downloadBtn.setEnabled(false);
             }
             else {
                 deleteBtn.setEnabled(true);
-                downloadBtn.setEnabled(true);
+                //downloadBtn.setEnabled(true);
             }
         });
     }
@@ -89,13 +100,13 @@ public class FileLayout extends HorizontalLayout {
         addFileBtn.setEnabled(false);
         deleteBtn.setWidth("100%");
         deleteBtn.setEnabled(false);
-        downloadBtn.setWidth("100%");
-        downloadBtn.setEnabled(false);
+//        downloadBtn.setWidth("100%");
+//        downloadBtn.setEnabled(false);
 
         btnLayout.add(upload);
         btnLayout.add(addFileBtn);
         btnLayout.add(deleteBtn);
-        btnLayout.add(downloadBtn);
+//        btnLayout.add(downloadBtn);
 
         deleteBtn.addClickListener(this::deleteFiles);
 
@@ -126,24 +137,40 @@ public class FileLayout extends HorizontalLayout {
                 addFileBtn.setEnabled(false);
         }).addEventData("event.detail.file.name");
 
-        downloadBtn.addClickListener(event -> {
-            if (selectedGridItems.size()>0) {
-                for (FileModel file : selectedGridItems) {
-                    try {
-                        getFile(file);
-                    }catch (Exception e){
-                        sendNotification(Messages.DOWNLOAD_FAILED.getMessage());
-                    }
-                }
-                fileGrid.deselectAll();
-                downloadBtn.setEnabled(false);
-            }
-        });
+//        downloadBtn.addClickListener(event -> {
+//            if (selectedGridItems.size()>0) {
+//                for (FileModel file : selectedGridItems) {
+//                    try {
+//                        getFile(file);
+//                    }catch (Exception e){
+//                        sendNotification(Messages.DOWNLOAD_FAILED.getMessage());
+//                    }
+//                }
+//                fileGrid.deselectAll();
+//                downloadBtn.setEnabled(false);
+//            }
+//        });
+
+
         return btnLayout;
     }
 
+    private FileInputStream createFileResource(FileModel fileModel){
+        File file = fileService.getSingleFile(fileModel,doc);
+        InputStream inputStream = null;
+
+        try {
+           inputStream = new CustomFileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return (FileInputStream) inputStream;
+    }
+
+
     private void getFile(FileModel fileModel) throws Exception {
-       String downloadPath = fileService.getDownloadPath(doc);
+       String downloadPath = fileService.getDownloadPath(doc,false);
         File file = new File(downloadPath+fileModel.getFileName());
         if (file.exists())
             fileExistsDialog(fileModel);
@@ -153,7 +180,9 @@ public class FileLayout extends HorizontalLayout {
 
 
     private void getFileFromServer(FileModel fileModel) throws Exception{
-        sendNotification(fileService.getFile(fileModel,doc));
+        sendNotification(fileService.getFileMultiSelected(fileModel,doc));
+
+
     }
 
     private void addFiles() throws IOException, CryptoException {
@@ -168,6 +197,7 @@ public class FileLayout extends HorizontalLayout {
                     InputStream inputStream = memoryBuffer.getInputStream(name);
                     fileDataMap.put(name,inputStream);
                 }
+
                 unUploadedFiles = fileService.prepareFilesForSendingToServer(fileDataMap,doc);
                 if (unUploadedFiles.size()>0){
                     sendNotification(Messages.UPLOAD_FAILED.getMessage()+": \n"+unUploadedFiles.toString());
@@ -273,6 +303,7 @@ public class FileLayout extends HorizontalLayout {
         if (isDoc()) {
             List<FileModel> fileInfoList = fileService.getAllFileInfo(doc);
             fileGrid.setItems(fileInfoList);
+            fileGrid.recalculateColumnWidths();
         }
         else {
             fileGrid.setItems();
@@ -282,6 +313,7 @@ public class FileLayout extends HorizontalLayout {
 
     private void refreshGrid(){
         fileGrid.getDataProvider().refreshAll();
+        fileGrid.recalculateColumnWidths();
     }
 
     public void setEnableAddBtn(boolean enabled){

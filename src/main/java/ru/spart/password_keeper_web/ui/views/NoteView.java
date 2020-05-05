@@ -116,13 +116,14 @@ public class NoteView extends VerticalLayout {
         setHorizontalComponentAlignment(Alignment.END,btnLayout);
 
         noteGrid.getStyle().set("padding-top", "0px");
+        //noteGrid.getStyle().set("border", "0px");
 
         mainLayout.add(noteGrid);
         mainLayout.add(btnLayout);
 
         noteLayout.setWidthFull();
         noteLayout.setHeight("100%");
-        editNoteLayout.setWidth("30%");
+        editNoteLayout.setWidth("100%");
         editNoteLayout.setHeightFull();
 
         noteLayout.add(mainLayout);
@@ -324,7 +325,7 @@ public class NoteView extends VerticalLayout {
     }
 
     private void setCryptoKeys(){
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         CryptText.setKeys(principal.getLogin());
     }
 }

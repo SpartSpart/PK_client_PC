@@ -100,7 +100,7 @@ public class DocView extends VerticalLayout {
     }
 
     private void setUploadListFilesElementHeight(int windowHeight){
-        final int totalHeightOfStaticPageElements = 677;
+        final int totalHeightOfStaticPageElements = 641;
         final int minHeightOfUploadListFilesElement = 51;
         if ((windowHeight-totalHeightOfStaticPageElements) > minHeightOfUploadListFilesElement){
             int listHeight = windowHeight-totalHeightOfStaticPageElements;
@@ -197,8 +197,8 @@ public class DocView extends VerticalLayout {
             ArrayList<Doc> filteredDocList = new ArrayList<>();
             String text = filterTxt.getValue();
             for (Doc doc : docList)
-                if (doc.getDocument().contains(text)
-                        || doc.getDescription().contains(text))
+                if (doc.getDocument().toUpperCase().contains(text.toUpperCase())
+                        || doc.getDescription().toUpperCase().contains(text.toUpperCase()))
                     filteredDocList.add(doc);
             docGrid.setItems(filteredDocList);
         }
@@ -211,7 +211,12 @@ public class DocView extends VerticalLayout {
     private void setGridSettings() {
         docGrid.setHeight("auto");
 
+        docGrid.getColumns().forEach(column -> column.setAutoWidth(true));
+
         docGrid.getColumnByKey("id").setVisible(false);
+
+        docGrid.getColumnByKey("document").setResizable(true);
+        docGrid.getColumnByKey("description").setResizable(true);
 
         docGrid.setColumnOrder(docGrid.getColumnByKey("id"),
                 docGrid.getColumnByKey("document"),

@@ -2,6 +2,7 @@ package ru.spart.password_keeper_web.cryptography;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import ru.spart.password_keeper_web.configuration.Principal;
+import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,7 +64,7 @@ public class CryptFile {
     }
 
     private static String getKey(){
-        Principal principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Principal principal = Menu.principal;
         String specialKey = "FileAesEncryption";
         String key = (principal.getLogin()+specialKey).substring(0,16);
         return key;

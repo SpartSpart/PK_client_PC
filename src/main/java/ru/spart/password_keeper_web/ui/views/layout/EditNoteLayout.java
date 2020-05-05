@@ -31,12 +31,12 @@ public class EditNoteLayout extends VerticalLayout {
         noteArea.setWidthFull();
         noteArea.setId("noteArea");
         noteArea.getStyle().set("font-size", "smaller");
-        //noteArea.getElement().getChild(0).getStyle().set("height","200px");
+
         add(noteArea);
 
         add(createBtnLayout());
 
-        getStyle().set("border", "1px solid lightgray");
+        //getStyle().set("border", "0px solid lightgray");
     }
 
    private HorizontalLayout createBtnLayout(){
