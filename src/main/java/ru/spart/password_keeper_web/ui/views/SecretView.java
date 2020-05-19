@@ -1,19 +1,23 @@
 package ru.spart.password_keeper_web.ui.views;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.configuration.Principal;
 import ru.spart.password_keeper_web.cryptography.CryptText;
@@ -35,6 +39,7 @@ public class SecretView extends VerticalLayout {
     private static final String EDIT_SECRET = "Edit Secret";
     private static final String HIDDEN_PASSWORD = "********";
 
+
     private SecretService secretService;
 
     private Secret secretForUpdate = null;
@@ -54,30 +59,38 @@ public class SecretView extends VerticalLayout {
     private Button deleteSecretBtn = new Button("Delete",this::deleteSecrets);
 
     @Autowired
-    public SecretView(SecretService secretService){
+    public SecretView(SecretService secretService) {
 
-        this.secretService = secretService;
-        setCryptoKeys();
+        try {
 
-        setSizeFull();
 
-        editSecretLayout.setVisible(false);
-        deleteSecretBtn.setEnabled(false);
+            this.secretService = secretService;
+            setCryptoKeys();
 
-        setFilterSettings();
-        HorizontalLayout btnLayout = secretAddsecretDeleteBtnLayout();
-        setHorizontalComponentAlignment(Alignment.END,btnLayout);
+            setSizeFull();
 
-        add(menu);
-        add(filterTxt);
-        add(secretGrid);
-        add(btnLayout);
-        add(editSecretLayout);
+            editSecretLayout.setVisible(false);
+            deleteSecretBtn.setEnabled(false);
 
-        setBtnListeners();
-        setGridSettings();
+            setFilterSettings();
+            HorizontalLayout btnLayout = secretAddsecretDeleteBtnLayout();
+            setHorizontalComponentAlignment(Alignment.END, btnLayout);
 
-        getAllSecrets();
+            add(menu);
+            add(filterTxt);
+            add(secretGrid);
+            add(btnLayout);
+            add(editSecretLayout);
+
+            setBtnListeners();
+            setGridSettings();
+
+            getAllSecrets();
+        }
+        catch (Exception e){
+            getUI().ifPresent(ui -> ui.navigate("login"));
+            sendNotification(e.toString());
+        }
     }
 
 
@@ -100,6 +113,7 @@ public class SecretView extends VerticalLayout {
 
     private void setFilterSettings() {
         filterTxt.setPlaceholder("Filter by description");
+        filterTxt.setId("filterTxt");
         filterTxt.setClearButtonVisible(true);
         filterTxt.setValueChangeMode(ValueChangeMode.EAGER);
         filterTxt.addValueChangeListener(e -> updateList());
@@ -130,6 +144,17 @@ public class SecretView extends VerticalLayout {
                 secretGrid.getColumnByKey("login"),
                 secretGrid.getColumnByKey("password"));
 
+        secretGrid.addColumn(new ComponentRenderer<>(item ->  {
+            Button copyBtn = new Button(new Icon(VaadinIcon.COPY));
+
+            copyBtn.addClickListener(buttonClickEvent -> {
+                addValueToClipBoard(item);
+            });
+
+            add(copyBtn);
+            return copyBtn;
+        }));
+
         secretGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
         secretGrid.addSelectionListener(selectEvent -> {
@@ -144,10 +169,18 @@ public class SecretView extends VerticalLayout {
         secretGrid.addItemDoubleClickListener(
                 itemClickevent -> {
                     editSecretLayout.setVisible(true);
+
                     Secret selectedSecret = itemClickevent.getItem();
+                    Secret editSecret = new Secret();
+
                     String password = searchPassword(selectedSecret.getId());
-                    selectedSecret.setPassword(password);
-                    editSecretGridValue(selectedSecret);
+
+                    editSecret.setId(selectedSecret.getId());
+                    editSecret.setDescription(selectedSecret.getDescription());
+                    editSecret.setLogin(selectedSecret.getLogin());
+                    editSecret.setPassword(password);
+
+                    editSecretGridValue(editSecret);
                 });
 
         secretGrid.addItemClickListener(
@@ -163,6 +196,19 @@ public class SecretView extends VerticalLayout {
                 });
 
     }
+
+    private void addValueToClipBoard(Secret secret){
+        String password = secret.getPassword();
+
+        if (secret.getPassword().equals(HIDDEN_PASSWORD))
+            password = searchPassword(secret.getId());
+
+        UI.getCurrent().getPage().executeJs(
+                "setTimeout(async()=>console.info(await window.navigator.clipboard.writeText('"+password+"')),0)");
+
+        sendNotification(Messages.PASSWORD_COPIED.getMessage());
+    }
+
 
     private void editSecretGridValue(Secret secret){
         editSecretLayout.changeLayoutStatus(EDIT_SECRET);
@@ -187,7 +233,6 @@ public class SecretView extends VerticalLayout {
 
     private List<Secret> hidePassword(List<Secret> secretList){
         List<Secret> secretListWithHiddenPassword = new ArrayList<>();
-        //  Collections.copy(secretListWithHiddenPassword,secretList);
         for(Secret secret : secretList){
             Secret hidenSecret = new Secret(
                     secret.getId(),

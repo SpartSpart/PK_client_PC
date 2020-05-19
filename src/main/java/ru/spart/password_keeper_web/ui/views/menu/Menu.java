@@ -6,6 +6,7 @@ import com.vaadin.flow.component.notification.Notification;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import ru.spart.password_keeper_web.configuration.Principal;
+import ru.spart.password_keeper_web.ui.views.exception.SessionEndException;
 
 import java.util.ArrayList;
 
@@ -15,19 +16,23 @@ public class Menu extends MenuBar {
 
     public Menu() {
 
-        principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        MenuItem secrets = addItem("Secrets");
-        MenuItem documents = addItem("Documents");
-        MenuItem notes = addItem("Notes");
-        MenuItem signOut = addItem("Sign Out, "+getUserName());
+            MenuItem secrets = addItem("Secrets");
+            MenuItem documents = addItem("Documents");
+            MenuItem notes = addItem("Notes");
+            MenuItem signOut = addItem("Sign Out, " + getUserName());
 
-
-        secrets.addClickListener(event -> routeToSecrets());
-        documents.addClickListener(event -> routeToDocuments());
-        notes.addClickListener(event -> routeToNotes());
-
-        signOut.addClickListener(event -> signOut());
+            secrets.addClickListener(event -> routeToSecrets());
+            documents.addClickListener(event -> routeToDocuments());
+            notes.addClickListener(event -> routeToNotes());
+            signOut.addClickListener(event -> signOut());
+        }
+        catch (Exception e){
+            getUI().ifPresent(ui -> ui.navigate("login"));
+            sendNotification(e.toString());
+        }
     }
 
     private void routeToSecrets(){

@@ -22,7 +22,13 @@ public enum Messages {
 
     NAME_ALREADY_EXISTS("Name is already exists"),
 
-    USER_ALREADY_EXISTS("User already exists. Choose another Login");
+    USER_ALREADY_EXISTS("User already exists. Choose another Login"),
+
+    SESSION_END("Your session failed, Log In again"),
+
+    PASSWORD_COPIED("Password copied");
+
+
 
     private final String message;
 

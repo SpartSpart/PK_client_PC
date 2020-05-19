@@ -18,6 +18,7 @@ import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.model.Doc;
 import ru.spart.password_keeper_web.service.DocService;
 import ru.spart.password_keeper_web.service.FileService;
+import ru.spart.password_keeper_web.ui.views.exception.SessionEndException;
 import ru.spart.password_keeper_web.ui.views.layout.EditDocLayout;
 import ru.spart.password_keeper_web.ui.views.layout.FileLayout;
 import ru.spart.password_keeper_web.ui.views.menu.Menu;
@@ -60,43 +61,51 @@ public class DocView extends VerticalLayout {
     @Autowired
     public DocView(DocService docService,FileService fileService) {
 
-        this.docService = docService;
-        this.fileService = fileService;
+        try {
+            this.docService = docService;
+            this.fileService = fileService;
 
-        fileLayout = new FileLayout(fileService);
+            fileLayout = new FileLayout(fileService);
 
-        setSizeFull();
+            setSizeFull();
 
-        editDocLayout.setVisible(false);
-        deleteDocBtn.setEnabled(false);
+            editDocLayout.setVisible(false);
+            deleteDocBtn.setEnabled(false);
 
-        setFilterSettings();
-        HorizontalLayout btnLayout = docAddDeleteBtnLayout();
-        setHorizontalComponentAlignment(Alignment.END, btnLayout);
+            setFilterSettings();
+            HorizontalLayout btnLayout = docAddDeleteBtnLayout();
+            setHorizontalComponentAlignment(Alignment.END, btnLayout);
 
-        HorizontalLayout gridHorizontalLayout = new HorizontalLayout();
-        gridHorizontalLayout.setWidthFull();
-        gridHorizontalLayout.setSizeFull();
-        gridHorizontalLayout.add(docGrid,fileLayout);
+            HorizontalLayout gridHorizontalLayout = new HorizontalLayout();
+            gridHorizontalLayout.setWidthFull();
+            gridHorizontalLayout.setSizeFull();
+            gridHorizontalLayout.add(docGrid, fileLayout);
 
-        add(menu);
-        add(filterTxt);
-        add(gridHorizontalLayout);
-        add(btnLayout);
-        add(editDocLayout);
+            add(menu);
+            add(filterTxt);
+            add(gridHorizontalLayout);
+            add(btnLayout);
+            add(editDocLayout);
 
-        setBtnListeners();
-        setGridSettings();
+            setBtnListeners();
+            setGridSettings();
 
-        getAllDocs();
+            getAllDocs();
 
-        setDefaultSizeUploadListFiles();
+            setDefaultSizeUploadListFiles();
 
-        UI.getCurrent().getPage().addBrowserWindowResizeListener(
-                event -> {
-                    int windowHeight = event.getHeight();
-                    setUploadListFilesElementHeight(windowHeight);
-                });
+            UI.getCurrent().getPage().addBrowserWindowResizeListener(
+                    event -> {
+                        int windowHeight = event.getHeight();
+                        setUploadListFilesElementHeight(windowHeight);
+                    });
+        }
+        catch (Exception e){
+            getUI().ifPresent(ui -> ui.navigate("login"));
+            sendNotification(e.toString());
+        }
+
+
     }
 
     private void setUploadListFilesElementHeight(int windowHeight){

@@ -20,6 +20,7 @@ import ru.spart.password_keeper_web.constants.Messages;
 import ru.spart.password_keeper_web.cryptography.CryptText;
 import ru.spart.password_keeper_web.model.Note;
 import ru.spart.password_keeper_web.service.NoteService;
+import ru.spart.password_keeper_web.ui.views.exception.SessionEndException;
 import ru.spart.password_keeper_web.ui.views.layout.EditNoteLayout;
 import ru.spart.password_keeper_web.ui.views.menu.Menu;
 
@@ -56,35 +57,41 @@ public class NoteView extends VerticalLayout {
     private Button deleteNoteBtn = new Button("Delete",this::deleteNote);
 
     @Autowired
-    public NoteView(NoteService noteService){
+    public NoteView(NoteService noteService) {
 
-        this.noteService = noteService;
+        try {
+            this.noteService = noteService;
 
-        setCryptoKeys();
+            setCryptoKeys();
 
-        setSizeFull();
+            setSizeFull();
 
-        editNoteLayout.setVisible(false);
-        deleteNoteBtn.setEnabled(false);
+            editNoteLayout.setVisible(false);
+            deleteNoteBtn.setEnabled(false);
 
-        setFilterSettings();
+            setFilterSettings();
 
-        add(menu);
-        add(filterTxt);
-        add(getNoteLayout());
+            add(menu);
+            add(filterTxt);
+            add(getNoteLayout());
 
-        setDefaultSizeNoteArea();
+            setDefaultSizeNoteArea();
 
-        UI.getCurrent().getPage().addBrowserWindowResizeListener(
-                event -> {
-                    int windowHeight = event.getHeight();
-                    setNoteAreaHeight(windowHeight);
-                });
+            UI.getCurrent().getPage().addBrowserWindowResizeListener(
+                    event -> {
+                        int windowHeight = event.getHeight();
+                        setNoteAreaHeight(windowHeight);
+                    });
 
-        setBtnListeners();
-        setGridSettings();
+            setBtnListeners();
+            setGridSettings();
 
-        getAllNotes();
+            getAllNotes();
+        }
+        catch (Exception e){
+            getUI().ifPresent(ui -> ui.navigate("login"));
+            sendNotification(e.toString());
+        }
     }
 
     private void setNoteAreaHeight(int windowHeight){
