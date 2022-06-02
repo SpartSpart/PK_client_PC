@@ -21,8 +21,11 @@ COPY ${PACKAGE_JSON} ${PACKAGE_JSON}
 COPY ${FRONT_END_VAADING_FILES} ./frontFiles
 
 RUN npm i
-RUN mkdir node_modules/@vaadin/flow-frontend
-RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
+
+RUN cp -rf vaadin/* node_modules/@vaadin
+#RUN mkdir node_modules/@vaadin/flow-frontend
+#RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
+RUN  node_modules/* node_modules
 RUN cp -a node_modules target
 
 ENTRYPOINT ["java","-jar","./target/secret-keeper-web.jar"]
