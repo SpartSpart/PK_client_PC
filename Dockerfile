@@ -24,7 +24,9 @@ COPY ${VAADIN} ./vaadin
 
 RUN npm i
 RUN mkdir node_modules/@vaadin/flow-frontend
-RUN cp -rf vaadin/* node_modules/@vaadin/
+RUN rm -r node_modules/@vaadin
+RUN cp -a vaadin node_modules
+RUN mv node_modules/vaadin node_modules/@vaadin
 RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
 RUN cp -a node_modules target
 
