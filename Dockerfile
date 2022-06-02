@@ -27,7 +27,7 @@ RUN mkdir node_modules/@vaadin/flow-frontend
 RUN rm -r node_modules/@vaadin
 RUN cp -a vaadin node_modules
 RUN mv node_modules/vaadin ./@vaadin
-RUN cp -a vaadin node_modules
+RUN cp -a vaadin ./
 #RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
 RUN cp -a node_modules target
 
