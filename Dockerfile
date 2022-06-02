@@ -24,7 +24,7 @@ COPY ${VAADIN} ./vaadin
 
 RUN npm i
 RUN mkdir -p node_modules/@vaadin/flow-frontend
-RUN mkdir -p test_dir
+RUN mkdir -p /test_dir
 ADD vaadin test_dir
 RUN cp -R ./vaadin test_dir
 RUN rm -R node_modules/@vaadin
