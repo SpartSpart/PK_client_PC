@@ -23,15 +23,15 @@ COPY ${FRONT_END_VAADIN_FILES} ./frontFiles
 COPY ${VAADIN} ./vaadin
 
 RUN npm i
-RUN sudo mkdir node_modules/@vaadin/flow-frontend
-RUN sudo mkdir test_dir
-RUN sudo cp -R vaadin test_dir
-RUN sudo rm -R node_modules/@vaadin
-RUN sudo cp -R vaadin node_modules
-RUN sudo mv node_modules/vaadin ./@vaadin
-RUN sudo cp -a vaadin WORKDIR
+RUN mkdir node_modules/@vaadin/flow-frontend
+RUN mkdir test_dir
+RUN cp -R ./vaadin test_dir
+RUN rm -R node_modules/@vaadin
+RUN cp -R ./vaadin node_modules
+RUN mv node_modules/vaadin ./@vaadin
+RUN cp -a vaadin sec_keep_web
 #RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
-RUN sudo cp -a node_modules target
+RUN cp -a node_modules target
 
 ENTRYPOINT ["java","-jar","./target/secret-keeper-web.jar"]
 #CMD ["/bin/sh"]
