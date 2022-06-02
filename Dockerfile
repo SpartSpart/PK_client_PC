@@ -22,7 +22,9 @@ COPY ${FRONT_END_VAADING_FILES} ./frontFiles
 
 RUN npm i
 
-RUN cp -rf vaadin/* node_modules/@vaadin
+#RUN cp -rf vaadin/* node_modules/@vaadin/
+RUN rm -rf node_modules/@vaadin/*
+RUN cp -a vaadin node_modules/@vaadin
 #RUN mkdir node_modules/@vaadin/flow-frontend
 #RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
 RUN  node_modules/* node_modules
