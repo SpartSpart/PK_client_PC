@@ -11,7 +11,7 @@ WORKDIR /sec_keep_web
 ARG JAR_FILE=target/*.jar
 ARG JAR=secret-keeper-web.jar
 ARG PACKAGE_JSON=./package.json
-ARG FRONT_END_VAADING_FILES=frontFiles
+ARG FRONT_END_VAADIN_FILES=frontFiles
 ARG VAADIN=vaadin
 ARG TARGET=./target
 
@@ -19,19 +19,19 @@ ADD ${TARGET} ./${TARGET}
 
 COPY ${JAR_FILE} ./${TARGET}/${JAR}
 COPY ${PACKAGE_JSON} ${PACKAGE_JSON}
-COPY ${FRONT_END_VAADING_FILES} ./frontFiles
+COPY ${FRONT_END_VAADIN_FILES} ./frontFiles
 COPY ${VAADIN} ./vaadin
 
 RUN npm i
-RUN mkdir node_modules/@vaadin/flow-frontend
-RUN mkdir test_dir
-RUN cp -r vaadin test_dir
-RUN rm -r node_modules/@vaadin
-RUN cp -r vaadin node_modules
-RUN mv node_modules/vaadin ./@vaadin
-RUN cp -a vaadin WORKDIR
+RUN sudo mkdir node_modules/@vaadin/flow-frontend
+RUN sudo mkdir test_dir
+RUN sudo cp -R vaadin test_dir
+RUN sudo rm -R node_modules/@vaadin
+RUN sudo cp -R vaadin node_modules
+RUN sudo mv node_modules/vaadin ./@vaadin
+RUN sudo cp -a vaadin WORKDIR
 #RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
-RUN cp -a node_modules target
+RUN sudo cp -a node_modules target
 
 ENTRYPOINT ["java","-jar","./target/secret-keeper-web.jar"]
 #CMD ["/bin/sh"]
