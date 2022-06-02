@@ -1,7 +1,7 @@
-FROM node:16.3.0-alpine
+FROM node:10.19.0-alpine
 
-RUN apk update && \
-    apk upgrade
+#RUN apk update && \
+#    apk upgrade
 RUN apk add openjdk8
 
 ENV JAVA_HOME /opt/jdk
