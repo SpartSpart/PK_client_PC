@@ -11,7 +11,7 @@ pipeline {
             steps {
                     sh 'docker build -t password-keeper-web:1.0.0 .'
                     sh 'docker stop password-keeper-web || true && docker rm password-keeper-web || true'
-                    sh 'docker run -d --net=host -p 8082:8080 --name password-keeper-web password-keeper-web:1.0.0'
+                    sh 'docker run -d --net=host -p 8082:8082 --name password-keeper-web password-keeper-web:1.0.0'
             }
         }
     }
