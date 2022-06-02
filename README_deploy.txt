@@ -8,7 +8,7 @@ To depoy project:
 7) It should create directories: build, config,node_modules,target,package.json,package-lock.json, webpack.config,webpack.generated
 8) copy files from target to "web\target"
 9) reboot cmd using administrator
-10) copy files from project "node_modules\@vaadin\flow-frontend" to "web\jar\node_modules\@vaadin\flow-frontend"
+10) copy files from project "node_modules\@vaadin\flow-frontend" to "web\jar\node_modules\@vaadin\flow-frontend" (from frontFiles maybe)
 11) cd "web\jar"
 12) java -jar "filename.jar"
 13) Good luck!=)
