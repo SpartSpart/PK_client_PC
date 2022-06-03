@@ -12,7 +12,7 @@ ARG JAR=secret-keeper-web.jar
 
 COPY ${JAR_FILE} ./${JAR}
 
-ENTRYPOINT ["java","-jar","./secret-keeper-web.jar"]
-#CMD ["/bin/sh"]
+#ENTRYPOINT ["java","-jar","./secret-keeper-web.jar"]
+CMD ["/bin/sh"]
 
 #cp frontFiles/* node_modules/@vaadin/flow-frontend/
