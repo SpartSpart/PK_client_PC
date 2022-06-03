@@ -15,7 +15,7 @@ ARG FRONT_END_VAADIN_FILES=frontFiles
 ARG VAADIN=vaadin
 ARG TARGET=target
 
-ADD ${TARGET} ./${TARGET}
+#ADD ${TARGET} ./${TARGET}
 
 COPY ${JAR_FILE} ./${TARGET}/${JAR}
 COPY ${PACKAGE_JSON} ${PACKAGE_JSON}
@@ -28,7 +28,7 @@ RUN whoami
 #RUN npm i -g pnpm@5
 RUN mkdir -p node_modules/@vaadin/flow-frontend
 RUN chmod -R 777 ./
-RUN mkdir -p ./test_dir
+RUN mkdir -p test_dir
 ADD vaadin test_dir
 #RUN cp -R vaadin test_dir
 #RUN rm -R node_modules/@vaadin
