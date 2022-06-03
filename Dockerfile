@@ -34,7 +34,7 @@ ADD vaadin test_dir
 #RUN mv node_modules/vaadin node_modules/@vaadin
 #RUN ls -la node_modules/@vaadin
 RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
-RUN cp -a node_modules/@vaadin/flow-frontend target/node_modules/@vaadin
+#RUN cp -a node_modules/@vaadin/flow-frontend target/node_modules/@vaadin
 
 #ENTRYPOINT ["java","-jar","./target/secret-keeper-web.jar"]
 CMD ["/bin/sh"]
