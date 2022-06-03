@@ -1,13 +1,11 @@
 FROM node:16.3.0-alpine
 
-#RUN apk update && \
-#    apk upgrade
 RUN apk add openjdk8
 
 ENV JAVA_HOME /opt/jdk
 ENV PATH ${PATH}:${JAVA_HOME}/bin
 
-ARG JAR_FILE=target/password_keeper_web*.jar
+ARG JAR_FILE=target/password_keeper_web-0.0.1-SNAPSHOT.jar
 
 WORKDIR /sec_keep_web
 ARG JAR=secret-keeper-web.jar
