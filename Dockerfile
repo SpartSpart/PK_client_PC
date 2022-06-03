@@ -22,8 +22,9 @@ COPY ${PACKAGE_JSON} ${PACKAGE_JSON}
 COPY ${FRONT_END_VAADIN_FILES} ./frontFiles
 COPY ${VAADIN} ./vaadin
 
-#RUN npm i
-RUN npm install -g npm@8.12.1
+RUN npm i
+RUN whoami
+#RUN npm install -g npm@8.12.1
 #RUN npm i -g pnpm@5
 RUN mkdir -p node_modules/@vaadin/flow-frontend
 RUN chmod -R 777 ./
@@ -35,6 +36,7 @@ ADD vaadin test_dir
 #RUN cp -R vaadin node_modules
 #RUN mv node_modules/vaadin node_modules/@vaadin
 #RUN ls -la node_modules/@vaadin
+RUN ls frontFiles
 RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
 #RUN cp -a node_modules/@vaadin/flow-frontend target/node_modules/@vaadin
 
