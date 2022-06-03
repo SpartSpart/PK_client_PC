@@ -28,7 +28,8 @@ RUN whoami
 #RUN npm i -g pnpm@5
 RUN mkdir -p node_modules/@vaadin/flow-frontend
 RUN chmod -R 777 ./
-RUN mkdir -p test_dir
+RUN mkdir -p /sec_keep_web/testDir2
+RUN mkdir -p root/test_dir
 ADD vaadin test_dir
 #RUN cp -R vaadin test_dir
 #RUN rm -R node_modules/@vaadin
