@@ -22,7 +22,8 @@ COPY ${PACKAGE_JSON} ${PACKAGE_JSON}
 COPY ${FRONT_END_VAADIN_FILES} ./frontFiles
 COPY ${VAADIN} ./vaadin
 
-RUN npm i
+#RUN npm i
+RUN npm install -g npm@8.12.1
 RUN mkdir -p node_modules/@vaadin/flow-frontend
 RUN mkdir -p ./test_dir
 ADD vaadin test_dir
