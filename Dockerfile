@@ -12,7 +12,7 @@ ARG JAR_FILE=target/*.jar
 ARG JAR=secret-keeper-web.jar
 ARG PACKAGE_JSON=./package.json
 ARG FRONT_END_VAADIN_FILES=frontFiles
-ARG VAADIN=vaadin
+ARG VAADIN=./vaadin
 ARG TARGET=./target
 
 ADD ${TARGET} ./${TARGET}
@@ -24,13 +24,14 @@ COPY ${VAADIN} ./vaadin
 
 RUN npm i
 RUN mkdir -p node_modules/@vaadin/flow-frontend
-RUN mkdir -p /test_dir
+RUN mkdir -p test_dir
 ADD vaadin test_dir
-RUN cp -R ./vaadin test_dir
+RUN cp -R vaadin test_dir
 RUN rm -R node_modules/@vaadin
-RUN cp -R ./vaadin node_modules
-RUN mv node_modules/vaadin ./@vaadin
-RUN cp -a vaadin sec_keep_web
+
+RUN cp -R vaadin node_modules
+RUN mv node_modules/vaadin node_modules/@vaadin
+RUN ls -la node_modules/@vaadin
 #RUN cp frontFiles/* node_modules/@vaadin/flow-frontend
 RUN cp -a node_modules target
 
