@@ -1,7 +1,8 @@
 spring:
    server:
       remoteserver: http://109.195.86.203:58440/api/
-      localserver: http://localhost:8082/
+#      localserver: http://localhost:8082/
+       localserver: http://109.195.86.203:18082/
    http:
       multipart:
           max-file-size: 30MB
