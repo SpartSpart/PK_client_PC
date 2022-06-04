@@ -1,6 +1,6 @@
 spring:
    server:
-      remoteserver: http://http://109.195.86.203:58440/api/
+      remoteserver: http://109.195.86.203:58440/api/
       localserver: http://localhost:8082/
    http:
       multipart:
