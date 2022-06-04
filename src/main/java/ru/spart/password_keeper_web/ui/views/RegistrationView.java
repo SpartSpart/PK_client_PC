@@ -22,7 +22,7 @@ public class RegistrationView extends VerticalLayout {
 
     private UserService userService;
 
-    private TextField loginTxt = new TextField("Введите пароль");
+    private TextField loginTxt = new TextField("Enter login");
     private PasswordField passwordTxt = new PasswordField("Enter Password");
     private PasswordField confirmPasswordTxt = new PasswordField("Confirm Password");
     private TextField emailTxt = new TextField("Enter E-Mail");
