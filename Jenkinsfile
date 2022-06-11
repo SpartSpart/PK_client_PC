@@ -1,17 +1,17 @@
 pipeline {
     agent none
     stages {
-        stage('Clean_Build_QA') {
+        stage('Clean_Build_DEV') {
         agent {
-          label "qa_agent1"
+          label "dev_agent2"
         }
             steps {
               	    sh 'mvn clean package'
             }
         }
-        stage ('Docker_Job_QA'){
+        stage ('Docker_Job_DEV'){
             agent {
-                label "qa_agent1"
+                label "dev_agent2"
             }
             steps {
                     sh 'docker build -t password-keeper-web:1.0.1 .'
@@ -19,17 +19,17 @@ pipeline {
                     sh 'docker run -d --net=host -p 8082:8082 --name password-keeper-web password-keeper-web:1.0.1'
             }
         }
-        stage('Clean_Build_DEV') {
+        stage('Clean_Build_QA') {
             agent {
-               label "dev_agent2"
+               label "qa_agent1"
             }
             steps {
               	    sh 'mvn clean package'
             }
         }
-        stage ('Docker_Job_DEV'){
+        stage ('Docker_Job_QA'){
             agent {
-               label "dev_agent2"
+               label "qa_agent1"
             }
             steps {
                     sh 'docker build -t password-keeper-web:1.0.1 .'
