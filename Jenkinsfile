@@ -1,6 +1,5 @@
 pipeline {
     agent none
-
     stages {
         stage('Clean_Build_QA') {
         agent {
@@ -20,7 +19,6 @@ pipeline {
                     sh 'docker run -d --net=host -p 8082:8082 --name password-keeper-web password-keeper-web:1.0.1'
             }
         }
-
         stage('Clean_Build_DEV') {
             agent {
                label "dev_agent2"
